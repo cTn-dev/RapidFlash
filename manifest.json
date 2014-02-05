@@ -15,6 +15,7 @@
     "permissions": [
         "https://www.google-analytics.com/",
         "serial",
+        "storage",
         "notifications"
     ]
 }
