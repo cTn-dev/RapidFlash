@@ -37,7 +37,14 @@ $(document).ready(function() {
     });
     
     var beging_upload = function(hex) {
-        STK500V2.connect(19600, hex);
+        switch($('select#programmer').val()) {
+            case 'turnigy_usb_linker':
+                STK500V2.connect(9600, hex);
+                break;
+            case 'arduino_usb_linker':
+                STK500V2.connect(19600, hex);
+                break;
+        }
     };
 });
 
