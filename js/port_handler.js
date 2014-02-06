@@ -48,7 +48,7 @@ port_handler.prototype.initialize = function() {
                                 if (port == result.last_used_port) {
                                     console.log('Selecting last used port: ' + result.last_used_port);
                                     
-                                    $('div#port-picker .port select').val(result.last_used_port);
+                                    $('div#controls #port').val(result.last_used_port);
                                 }
                             });
                         } else {
@@ -74,9 +74,9 @@ port_handler.prototype.initialize = function() {
                 
                 // select / highlight new port, if connected -> select connected port
                 if (!GUI.connected_to) {
-                    $('div#port-picker .port select').val(new_ports[0]);
+                    $('div#controls #port').val(new_ports[0]);
                 } else {   
-                    $('div#port-picker .port select').val(GUI.connected_to);
+                    $('div#controls #port').val(GUI.connected_to);
                 }
                 
                 // trigger callbacks
@@ -98,14 +98,14 @@ port_handler.prototype.initialize = function() {
 };
 
 port_handler.prototype.update_port_select = function(ports) {
-    $('div#port-picker .port select').html(''); // drop previous one
+    $('div#controls #port').html(''); // drop previous one
     
     if (ports.length > 0) {
         for (var i = 0; i < ports.length; i++) {
-            $('div#port-picker .port select').append($("<option/>", {value: ports[i], text: ports[i]}));
+            $('div#controls #port').append($("<option/>", {value: ports[i], text: ports[i]}));
         }
     } else {
-        $('div#port-picker .port select').append($("<option/>", {value: 0, text: 'NOT FOUND'}));
+        $('div#controls #port').append($("<option/>", {value: 0, text: 'NOT FOUND'}));
     }  
 };
 
