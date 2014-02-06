@@ -6,10 +6,7 @@
 
 var STK500v2_protocol = function() {
     this.hex; // ref
-    
-    this.RX_buffer = [];
-    
-    this.sequence_number;
+
     this.bytes_flashed;
     this.bytes_verified;
     
@@ -100,6 +97,15 @@ var STK500v2_protocol = function() {
         PARAM_RESET_POLARITY:       0x9E,
         PARAM_CONTROLLER_INIT:      0x9F
     };
+    
+    // state machine variables
+    this.sequence_number;
+    
+    this.message_state = 0;
+    this.message_size = 0;
+    this.message_buffer = [];
+    this.message_buffer_i = 0;
+    this.message_crc = 0;
 };
 
 STK500v2_protocol.prototype.initialize = function() {
@@ -129,17 +135,80 @@ STK500v2_protocol.prototype.initialize = function() {
                 }
             });
         }
-    }, 1000);
+    }, 2000, true);
 };
 
 STK500v2_protocol.prototype.read = function(readInfo) {
     var data = new Uint8Array(readInfo.data);
     
     for (var i = 0; i < data.length; i++) {
-        this.RX_buffer.push(data[i]);
+        // state machine
+        switch(this.message_state) {
+            case 0:
+                if (data[i] == this.message.MESSAGE_START) {
+                    this.message_crc ^= data[i];
+                    this.message_state++;
+                }
+                break;
+            case 1:
+                if (data[i] == (this.sequence_number - 1)) { // -1 because sequence_number increments in .send
+                    this.message_crc ^= data[i];
+                    this.message_state++;
+                } else {
+                    this.message_crc = 0;
+                    this.message_state = 0;
+                }
+                break;
+            case 2:
+                this.message_size = data[i] << 8; // MSB
+                this.message_crc ^= data[i];
+                
+                this.message_state++;
+                break;
+            case 3:
+                this.message_size |= data[i]; // LSB
+                this.message_crc ^= data[i];
+                
+                this.message_state++;
+                break;
+            case 4:
+                if (data[i] == this.message.TOKEN) {
+                    this.message_buffer = new ArrayBuffer(this.message_size);
+                    this.message_buffer_uint8_view = new Uint8Array(this.message_buffer);
+                    this.message_crc ^= data[i];
+                    
+                    this.message_state++;
+                } else {
+                    this.message_crc = 0;
+                    this.message_state = 0;
+                }
+                break;
+            case 5:
+                this.message_buffer_uint8_view[this.message_buffer_i] = data[i];
+                this.message_crc ^= data[i];
+                this.message_buffer_i++;
+                
+                if (this.message_buffer_i >= this.message_size) {
+                    this.message_state++;
+                }                
+                break;
+            case 6:
+                if (this.message_crc == data[i]) {
+                    // message received, all is proper, process
+                    console.log(this.message_buffer_uint8_view);
+                } else {
+                    // crc failed
+                    console.log('crc failed, sequence: ' + (this.sequence_number - 1));
+                    console.log(this.message_buffer_uint8_view);
+                    console.log(this.message_crc + ' ' + data[i]);
+                }
+                
+                this.message_buffer_i = 0;
+                this.message_crc = 0;
+                this.message_state = 0;
+                break;
+        }
     }
-    
-    console.log(this.RX_buffer);
 };
 
 STK500v2_protocol.prototype.send = function(Array, callback) {
