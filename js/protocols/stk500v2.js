@@ -422,7 +422,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 6:
             // flash
-            GUI.log('Flashing ...');
+            GUI.log('Writing ...');
             
             var address = 0;
             
@@ -457,6 +457,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         }
                         
                         if (address >= self.hex.bytes) {
+                            GUI.log('Writing <span style="color: green;">done</span>');
                             self.upload_procedure(7);
                         } else {
                             write(next_write);
@@ -512,8 +513,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         if (next_read == 0) {
                             if (self.verify_flash(self.hex.data, self.verify_hex)) {
                                 GUI.log('Verifying <span style="color: green">done</span>');
+                                GUI.log('Programming: <span style="color: green;">SUCCESSFUL</span>');
                             } else {
                                 GUI.log('Verifying <span style="color: red">failed</span>');
+                                GUI.log('Programming: <span style="color: red;">FAILED</span>');
                             }
                             
                             self.upload_procedure(9);
