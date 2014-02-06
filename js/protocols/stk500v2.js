@@ -412,7 +412,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             // load address
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Adress loaded: 0x00000000');
+                    console.log('Address loaded: 0x00000000');
                     self.upload_procedure(6);
                 } else {
                     console.log('Failed to load address');
@@ -424,7 +424,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             // flash
             GUI.log('Flashing ...');
             
-            var bytes_flashed = 0;
+            var address = 0;
             
             var write = function(bytes_to_write) {
                 var arr = [];
@@ -440,28 +440,27 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                 arr[9] = 0x00; // Poll Value #2 (not used for flash programming)
                 
                 for (var i = 0; i < bytes_to_write; i++) {
-                    arr.push(self.hex.data[(bytes_flashed + i)]);
+                    arr.push(self.hex.data[(address + i)]);
                 }
                 
                 self.send(arr, function(data) {
                     if (data[1] == self.status.STATUS_CMD_OK) {
                         // all good, continue
-                        console.log('Wrote: 0x' + bytes_flashed.toString(16));
+                        console.log('Wrote: ' + address);
+                        address += bytes_to_write;
                         
                         var next_write;
-                        if ((bytes_flashed + 64) < self.hex.bytes) {
+                        if ((address + 64) < self.hex.bytes) {
                             next_write = 64;
                         } else {
-                            next_write = self.hex.bytes - bytes_flashed;
+                            next_write = self.hex.bytes - address;
                         }
-                        bytes_flashed += next_write;
                         
-                        if (next_write == 0) {
+                        if (address >= self.hex.bytes) {
                             self.upload_procedure(7);
                         } else {
                             write(next_write);
                         }
-                        
                     } else {
                         // failed to write
                         self.upload_procedure(99);
@@ -476,7 +475,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             // load address
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Adress loaded: 0x00000000');
+                    console.log('Address loaded: 0x00000000');
                     self.upload_procedure(8);
                 } else {
                     console.log('Failed to load address');
@@ -500,7 +499,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                 self.send(arr, function(data) {
                     if (data[1] == self.status.STATUS_CMD_OK) {
                         // all good, continue
-                        console.log('Read: 0x' + address.toString(16));
+                        console.log('Read: ' + address);
                         
                         var next_read;
                         if ((address + 64) < self.hex.bytes) {
