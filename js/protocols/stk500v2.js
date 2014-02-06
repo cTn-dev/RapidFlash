@@ -293,9 +293,31 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[11] = 0x00; // Command Byte # 4 to be transmitted
             
             self.send(arr, function(data) {
-                console.log('Entered programming mode');
-                
-                self.upload_procedure(99);
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Entered programming mode');
+                    self.upload_procedure(2);
+                } else {
+                    console.log('Failed to enter programming mode');
+                    self.upload_procedure(99);
+                }
+            });
+            break;
+        case 2:
+            // no idea what happens here for now
+            var arr = [];
+            arr[0] = this.command.CMD_SPI_MULTI;
+            arr[1] = 0x04; // Number of bytes to transmit 
+            arr[2] = 0x04; // Number of bytes to receive
+            arr[3] = 0x00; // Start address of returned data. Specifies on what transmitted byte the response is to be stored and returned.
+            // TxData below, The data be transmitted. The size is specified by NumTx
+            arr[4] = 0x30;
+            arr[5] = 0x00;
+            arr[6] = 0x00;
+            arr[7] = 0x00;
+            
+            self.send(arr, function(data) {
+                console.log('SPI arrived')
+                console.log(data);
             });
             break;
         case 99:
