@@ -1,5 +1,3 @@
-var debug = true;
-
 // Get access to the background window object
 // This object is used to pass current connectionId to the backround page
 // so the onClosed event can close the port for us if it was left opened, without this
