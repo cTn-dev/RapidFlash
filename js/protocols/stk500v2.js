@@ -304,21 +304,39 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 2:
             // no idea what happens here for now
-            var arr = [];
-            arr[0] = this.command.CMD_SPI_MULTI;
-            arr[1] = 0x04; // Number of bytes to transmit 
-            arr[2] = 0x04; // Number of bytes to receive
-            arr[3] = 0x00; // Start address of returned data. Specifies on what transmitted byte the response is to be stored and returned.
-            // TxData below, The data be transmitted. The size is specified by NumTx
-            arr[4] = 0x30;
-            arr[5] = 0x00;
-            arr[6] = 0x00;
-            arr[7] = 0x00;
+            var needle = 0;
+            var arr = [3];
             
-            self.send(arr, function(data) {
-                console.log('SPI arrived')
-                console.log(data);
-            });
+            // first set
+            arr[0][0] = this.command.CMD_SPI_MULTI;
+            arr[0][1] = 0x04; // Number of bytes to transmit 
+            arr[0][2] = 0x04; // Number of bytes to receive
+            arr[0][3] = 0x00; // Start address of returned data. Specifies on what transmitted byte the response is to be stored and returned.
+            // TxData below, The data be transmitted. The size is specified by NumTx
+            arr[0][4] = 0x30;
+            arr[0][5] = 0x00;
+            arr[0][6] = 0x00;
+            arr[0][7] = 0x00;
+            
+            // second set
+            
+            // third set
+            
+            var send_spi = function() {
+                self.send(arr[needle], function(data) {
+                    console.log('SPI arrived - ' + needle);
+                    needle++;
+                    
+                    if (needle < 3) {
+                        send_spi();
+                    } else {
+                        self.upload_procedure(99);
+                    }
+                });
+            };
+            
+            // start sending
+            send_spi();
             break;
         case 99:
             serial.disconnect(function(result) {
