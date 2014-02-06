@@ -422,39 +422,71 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 7:
             // load address
+            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Adress loaded: 0x00000000');
+                    self.upload_procedure(8);
+                } else {
+                    console.log('Failed to load address');
+                    self.upload_procedure(99);
+                }
+            });
             break;
         case 8:
             // read
             var address = 0;
             
-            var read = function() {
+            var read = function(bytes_to_read) {
                 var arr = [];
                 arr[0] = self.command.CMD_READ_FLASH_ISP;
                 arr[1] = 0; // Total number of bytes to read, MSB first
-                arr[2] = 64; // LSB
+                arr[2] = bytes_to_read; // LSB
                 arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
                 
                 self.send(arr, function(data) {
-                    address += 64;
-                    if (address > 8192) { // 128 cycles
-                        // debug                        
-                        self.upload_procedure(99);
+                    var next_read;
+                    if ((address + 64) < self.hex.bytes) {
+                        next_read = 64;
+                    } else {
+                        next_read = self.hex.bytes - address;
+                    }
+                    
+                    address += next_read;
+
+                    if (address > self.hex.bytes || next_read == 0) {
+                        if (self.verify_flash(self.hex.data, self.verify_hex)) {
+                            GUI.log('Verifying <span style="color: green">done</span>');
+                        } else {
+                            GUI.log('Verifying <span style="color: red">failed</span>');
+                        }
+                        
+                        self.upload_procedure(9);
                     } else {
                         console.log('Read: 0x' + address.toString(16));
                         
                         for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
                             self.verify_hex.push(data[i]);
                         }
-                        read();
+                        
+                        read(next_read);
                     }
                 });
             };
             
             // start reading
-            read();
+            read(64);
             break;
         case 9:
-            // leave programming mode
+            // leave programming mode            
+            var arr = [];
+            arr[0] = self.command.CMD_LEAVE_PROGMODE_ISP;
+            arr[1] = 1; // Pre-delay (in ms)
+            arr[2] = 1; // Post-delay (in ms)
+            
+            self.send(arr, function(data) {
+                console.log('Left Programming Mode');
+                self.upload_procedure(99);
+            });
             break;
         case 99:
             serial.disconnect(function(result) {
@@ -466,6 +498,22 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             });
             break;
     }
+};
+
+// first_array = usually hex_to_flash array
+// second_array = usually verify_hex array
+// result = true/false
+STK500v2_protocol.prototype.verify_flash = function(first_array, second_array) {
+    for (var i = 0; i < first_array.length; i++) {
+        if (first_array[i] != second_array[i]) {
+            console.log('Verification failed on byte: ' + i + ' expected: ' + first_array[i] + ' received: ' + second_array[i]);
+            return false;
+        }
+    }
+    
+    console.log('Verification successful, matching: ' + first_array.length + ' bytes');
+    
+    return true;
 };
 
 var STK500V2 = new STK500v2_protocol();
