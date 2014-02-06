@@ -6,6 +6,7 @@
 
 var STK500v2_protocol = function() {
     this.hex; // ref
+    this.verify_hex = [];
 
     this.bytes_flashed;
     this.bytes_verified;
@@ -295,7 +296,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Entered programming mode');
-                    self.upload_procedure(2);
+                    self.upload_procedure(4);
                 } else {
                     console.log('Failed to enter programming mode');
                     self.upload_procedure(99);
@@ -303,9 +304,9 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             });
             break;
         case 2:
-            // no idea what happens here for now
+            // no idea what happens here for now (skipped for now)
             var needle = 0;
-            var arr = [3];
+            var arr = [[], [], []];
             
             // first set
             arr[0][0] = this.command.CMD_SPI_MULTI;
@@ -319,24 +320,141 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[0][7] = 0x00;
             
             // second set
+            arr[1][0] = this.command.CMD_SPI_MULTI;
+            arr[1][1] = 0x04;
+            arr[1][2] = 0x04;
+            arr[1][3] = 0x00;
+            // TxData below
+            arr[1][4] = 0x30;
+            arr[1][5] = 0x00;
+            arr[1][6] = 0x01;
+            arr[1][7] = 0x00;
             
             // third set
+            arr[2][0] = this.command.CMD_SPI_MULTI;
+            arr[2][1] = 0x04;
+            arr[2][2] = 0x04;
+            arr[2][3] = 0x00;
+            // TxData below
+            arr[2][4] = 0x30;
+            arr[2][5] = 0x00;
+            arr[2][6] = 0x02;
+            arr[2][7] = 0x00;
             
             var send_spi = function() {
                 self.send(arr[needle], function(data) {
-                    console.log('SPI arrived - ' + needle);
-                    needle++;
+                    console.log(data);
                     
+                    needle++;
                     if (needle < 3) {
                         send_spi();
                     } else {
-                        self.upload_procedure(99);
+                        self.upload_procedure(3);
                     }
                 });
             };
             
             // start sending
             send_spi();
+            break;
+        case 3:
+            // chip erase (skipped while we dont have a flasher routine)
+            var arr = [];
+            
+            arr[0] = self.command.CMD_CHIP_ERASE_ISP;
+            arr[1] = 10; // Delay (in ms) to ensure that the erase of the device is finished
+            arr[2] = 0; // Poll method, 0 = use delay 1= use RDY/BSY command 
+            arr[3] = 0xAC; // Command Byte # 1 to be transmitted 
+            arr[4] = 0x98; // Command Byte # 2 to be transmitted 
+            arr[5] = 0x3B; // Command Byte # 3 to be transmitted 
+            arr[6] = 0xE6; // Command Byte # 4 to be transmitted 
+            
+            self.send(arr, function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Chip erased');
+                    self.upload_procedure(4);
+                } else {
+                    console.log('failed to erase chip');
+                    self.upload_procedure(99);
+                }
+            });
+            break;
+        case 4:
+            // enter programming mode
+            var arr = [];
+            arr[0] = this.command.CMD_ENTER_PROGMODE_ISP;
+            arr[1] = 200; // timeout (Command time-out (in ms)
+            arr[2] = 100; // Delay (in ms) used for pin stabilization
+            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution 
+            arr[4] = 32; // Number of synchronization loops 
+            arr[5] = 0; // Delay (in ms) between each byte in the EnterProgMode command.
+            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx 
+            arr[7] = 3; // Start address, received byte: 0 = no polling, 3 = AVR, 4 = AT89xx
+            arr[8] = 0xAC; // Command Byte # 1 to be transmitted
+            arr[9] = 0x53; // Command Byte # 2 to be transmitted
+            arr[10] = 0x00; // Command Byte # 3 to be transmitted
+            arr[11] = 0x00; // Command Byte # 4 to be transmitted
+            
+            self.send(arr, function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Entered programming mode');
+                    self.upload_procedure(5);
+                } else {
+                    console.log('Failed to enter programming mode');
+                    self.upload_procedure(99);
+                }
+            });
+            break;
+        case 5:
+            // load address
+            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Adress loaded: 0x00000000');
+                    self.upload_procedure(8);
+                } else {
+                    console.log('Failed to load address');
+                    self.upload_procedure(99);
+                }
+            });
+            break;
+        case 6:
+            // flash
+            break;
+        case 7:
+            // load address
+            break;
+        case 8:
+            // read
+            var address = 0;
+            
+            var read = function() {
+                var arr = [];
+                arr[0] = self.command.CMD_READ_FLASH_ISP;
+                arr[1] = 0; // Total number of bytes to read, MSB first
+                arr[2] = 64; // LSB
+                arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
+                
+                self.send(arr, function(data) {
+                    address += 64;
+                    if (address > 8192) { // 128 cycles
+                        // debug                        
+                        self.upload_procedure(99);
+                    } else {
+                        console.log('Read: 0x' + address.toString(16));
+                        
+                        for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
+                            self.verify_hex.push(data[i]);
+                        }
+                        read();
+                    }
+                });
+            };
+            
+            // start reading
+            read();
+            break;
+        case 9:
+            // leave programming mode
             break;
         case 99:
             serial.disconnect(function(result) {
