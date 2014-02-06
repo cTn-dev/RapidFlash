@@ -18,21 +18,27 @@ $(document).ready(function() {
 
     // simple flash button for testing
     $('a.flash').click(function() {
-        $.get("./test_fw/bs_nfet.hex", function(result) {
-            // parsing hex in different thread
-            var worker = new Worker('./js/workers/hex_parser.js');
-            
-            // "callback"
-            worker.onmessage = function (event) {
-                parsed_hex = event.data;
+        if (!GUI.connect_lock) {
+            $.get("./test_fw/bs_nfet.hex", function(result) {
+                // parsing hex in different thread
+                var worker = new Worker('./js/workers/hex_parser.js');
                 
-                console.log(parsed_hex);
-            };
-            
-            // send data/string over for processing
-            worker.postMessage(result);
-        });
+                // "callback"
+                worker.onmessage = function (event) {
+                    parsed_hex = event.data;
+                    
+                    beging_upload(parsed_hex);
+                };
+                
+                // send data/string over for processing
+                worker.postMessage(result);
+            });
+        }
     });
+    
+    var beging_upload = function(hex) {
+        STK500V2.connect(19600, hex);
+    };
 });
 
 // accepting single level array with "value" as key

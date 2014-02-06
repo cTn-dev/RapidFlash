@@ -9,10 +9,9 @@ var STK500v2_protocol = function() {
     
     this.RX_buffer = [];
     
+    this.sequence_number;
     this.bytes_flashed;
     this.bytes_verified;
-    
-    this.sequence_number;
     
     this.message = {
         MESSAGE_START:              0x1B,
@@ -103,12 +102,26 @@ var STK500v2_protocol = function() {
     };
 };
 
+STK500v2_protocol.prototype.initialize = function() {
+    var self = this;
+    
+    this.sequence_number = 1;
+    this.bytes_flashed = 0;
+    this.bytes_verified = 0;
+    
+    serial.onReceive.addListener(function(readInfo) {
+        self.read(readInfo);
+    });    
+};
+
 STK500v2_protocol.prototype.read = function(readInfo) {
     var data = new Uint8Array(readInfo.data);
     
     for (var i = 0; i < data.length; i++) {
         this.RX_buffer.push(data[i]);
     }
+    
+    console.log(this.RX_buffer);
 };
 
 STK500v2_protocol.prototype.send = function(Array, callback) {
@@ -134,14 +147,25 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
     serial.send(bufferOut, function(writeInfo) {}); 
 };
 
-STK500v2_protocol.prototype.connect = function(hex) {
+STK500v2_protocol.prototype.connect = function(baud, hex) {
     var self = this;
     self.hex = hex;
     
-    var selected_port = String($('div#port-picker .port select').val());
+    var selected_port = String($('div#controls #port').val());
     
     if (selected_port != '0') {
+        serial.connect(selected_port, {bitrate: baud}, function(openInfo) {
+            if (openInfo) {
+                GUI.log('Connection <span style="color: green">successfully</span> opened with ID: ' + openInfo.connectionId);
+                
+                self.initialize();
+            } else {
+                GUI.log('<span style="color: red">Failed</span> to open serial port');
+            }
+        });
     } else {
         GUI.log('Please select valid serial port');
     }    
 };
+
+var STK500V2 = new STK500v2_protocol();
