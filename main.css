@@ -83,4 +83,20 @@ a:hover {
     overflow-x: hidden;    
 }
 .button {
+    display: block;
+    float: left;
+    
+    height: 26px;
+    line-height: 26px;
+    
+    padding: 0 10px 0 10px;
+    
+    text-align: center;
+    font-weight: bold;
+  
+    border: 1px solid silver;
+    background-color: #ececec;  
+}
+.button:hover {
+    background-color: #dedcdc;
 }
