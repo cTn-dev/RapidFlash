@@ -124,22 +124,21 @@ STK500v2_protocol.prototype.initialize = function() {
     var retry = 0;
     GUI.interval_add('get_in_sync', function() {
         self.send([self.command.CMD_SIGN_ON], function(data_array) {
-            console.log(data_array);
+            GUI.interval_remove('get_in_sync');
+            
+            console.log('Programmer in sync');
+            
+            self.upload_procedure(1);
         });
         
         if (retry++ >= 5) {
             GUI.interval_remove('get_in_sync');
             GUI.log('Connection to the module <span style="color: red">failed</span>');
             
-            serial.disconnect(function(result) {
-                if (result) { // All went as expected
-                    GUI.log('<span style="color: green">Successfully</span> closed serial connection');
-                } else { // Something went wrong
-                    GUI.log('<span style="color: red">Failed</span> to close serial port');
-                }
-            });
+            // disconnect
+            self.upload_procedure(99);
         }
-    }, 2000, true);
+    }, 1000, true);
 };
 
 STK500v2_protocol.prototype.read = function(readInfo) {
@@ -199,16 +198,19 @@ STK500v2_protocol.prototype.read = function(readInfo) {
             case 6:
                 if (this.message_crc == data[i]) {
                     // message received, all is proper, process
+                    var callback_fired = false;
                     for (var j = (this.message_callbacks.length - 1); j >= 0; j--) {
-                        if (this.message_callbacks[j].sequence == this.sequence_number) {
+                        if (this.message_callbacks[j].command == this.message_buffer_uint8_view[0]) {
                             // fire callback
-                            this.message_callbacks[j].callback(this.message_buffer_uint8_view, this.message_buffer);
+                            if (!callback_fired) {
+                                this.message_callbacks[j].callback(this.message_buffer_uint8_view, this.message_buffer);
+                                callback_fired = true;
+                            }
                             
                             // remove callback object
-                            // this.message_callbacks.splice(j, 1);
+                            this.message_callbacks.splice(j, 1);
                         }
                     }
-                    this.message_callbacks = [];
                 } else {
                     // crc failed
                     console.log('crc failed, sequence: ' + this.sequence_number);
@@ -244,7 +246,7 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
     bufferView[bufferView.length - 1] = crc;
     
     // attach callback
-    if (callback) this.message_callbacks.push({'sequence': this.sequence_number, 'callback': callback});
+    if (callback) this.message_callbacks.push({'command': Array[0], 'callback': callback});
     
     serial.send(bufferOut, function(writeInfo) {}); 
 };
@@ -268,6 +270,44 @@ STK500v2_protocol.prototype.connect = function(baud, hex) {
     } else {
         GUI.log('Please select valid serial port');
     }    
+};
+
+STK500v2_protocol.prototype.upload_procedure = function(step) {
+    var self = this;
+    
+    switch (step) {
+        case 1:
+            // enter programming mode
+            var arr = [];
+            arr[0] = this.command.CMD_ENTER_PROGMODE_ISP;
+            arr[1] = 200; // timeout (Command time-out (in ms)
+            arr[2] = 100; // Delay (in ms) used for pin stabilization
+            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution 
+            arr[4] = 32; // Number of synchronization loops 
+            arr[5] = 0; // Delay (in ms) between each byte in the EnterProgMode command.
+            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx 
+            arr[7] = 3; // Start address, received byte: 0 = no polling, 3 = AVR, 4 = AT89xx
+            arr[8] = 0xAC; // Command Byte # 1 to be transmitted
+            arr[9] = 0x53; // Command Byte # 2 to be transmitted
+            arr[10] = 0x00; // Command Byte # 3 to be transmitted
+            arr[11] = 0x00; // Command Byte # 4 to be transmitted
+            
+            self.send(arr, function(data) {
+                console.log('Entered programming mode');
+                
+                self.upload_procedure(99);
+            });
+            break;
+        case 99:
+            serial.disconnect(function(result) {
+                if (result) { // All went as expected
+                    GUI.log('<span style="color: green">Successfully</span> closed serial connection');
+                } else { // Something went wrong
+                    GUI.log('<span style="color: red">Failed</span> to close serial port');
+                }
+            });
+            break;
+    }
 };
 
 var STK500V2 = new STK500v2_protocol();
