@@ -7,9 +7,6 @@
 var STK500v2_protocol = function() {
     this.hex; // ref
     this.verify_hex = [];
-
-    this.bytes_flashed;
-    this.bytes_verified;
     
     this.message = {
         MESSAGE_START:              0x1B,
@@ -114,9 +111,9 @@ var STK500v2_protocol = function() {
 STK500v2_protocol.prototype.initialize = function() {
     var self = this;
     
+    this.verify_hex = [];
+    
     this.sequence_number = 0;
-    this.bytes_flashed = 0;
-    this.bytes_verified = 0;
     
     serial.onReceive.addListener(function(readInfo) {
         self.read(readInfo);
@@ -212,6 +209,11 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                             this.message_callbacks.splice(j, 1);
                         }
                     }
+                    
+                    if (!callback_fired) {
+                        // unexpected message arrived
+                        console.log(this.message_buffer_uint8_view);
+                    }
                 } else {
                     // crc failed
                     console.log('crc failed, sequence: ' + this.sequence_number);
@@ -230,6 +232,7 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
     var bufferView = new Uint8Array(bufferOut);
     
     this.sequence_number++;
+    if (this.sequence_number >= 256) this.sequence_number = 0; // reset 8 bit
     
     bufferView[0] = this.message.MESSAGE_START;
     bufferView[1] = this.sequence_number;
@@ -296,7 +299,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Entered programming mode');
-                    self.upload_procedure(4);
+                    self.upload_procedure(3);
                 } else {
                     console.log('Failed to enter programming mode');
                     self.upload_procedure(99);
@@ -358,7 +361,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             send_spi();
             break;
         case 3:
-            // chip erase (skipped while we dont have a flasher routine)
+            // chip erase
             var arr = [];
             
             arr[0] = self.command.CMD_CHIP_ERASE_ISP;
@@ -410,7 +413,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Adress loaded: 0x00000000');
-                    self.upload_procedure(8);
+                    self.upload_procedure(6);
                 } else {
                     console.log('Failed to load address');
                     self.upload_procedure(99);
@@ -419,6 +422,55 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 6:
             // flash
+            GUI.log('Flashing ...');
+            
+            var bytes_flashed = 0;
+            
+            var write = function(bytes_to_write) {
+                var arr = [];
+                arr[0] = self.command.CMD_PROGRAM_FLASH_ISP;
+                arr[1] = 0; // Total number of bytes to program, MSB first 
+                arr[2] = bytes_to_write; // LSB
+                arr[3] = 0xA1; // Mode byte
+                arr[4] = 10; // delay
+                arr[5] = bytes_to_write; // Command 1 (Load Page, Write Program Memory)
+                arr[6] = 0x4C; // Command 2 (Write Program Memory Page) 
+                arr[7] = 0x20; // Command 3 (Read Program Memory) 
+                arr[8] = 0xFF; // Poll Value #1 
+                arr[9] = 0x00; // Poll Value #2 (not used for flash programming)
+                
+                for (var i = 0; i < bytes_to_write; i++) {
+                    arr.push(self.hex.data[(bytes_flashed + i)]);
+                }
+                
+                self.send(arr, function(data) {
+                    if (data[1] == self.status.STATUS_CMD_OK) {
+                        // all good, continue
+                        console.log('Wrote: 0x' + bytes_flashed.toString(16));
+                        
+                        var next_write;
+                        if ((bytes_flashed + 64) < self.hex.bytes) {
+                            next_write = 64;
+                        } else {
+                            next_write = self.hex.bytes - bytes_flashed;
+                        }
+                        bytes_flashed += next_write;
+                        
+                        if (next_write == 0) {
+                            self.upload_procedure(7);
+                        } else {
+                            write(next_write);
+                        }
+                        
+                    } else {
+                        // failed to write
+                        self.upload_procedure(99);
+                    }
+                });
+            };
+            
+            // start writing
+            write(64);
             break;
         case 7:
             // load address
@@ -434,6 +486,8 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 8:
             // read
+            GUI.log('Verifying ...');
+            
             var address = 0;
             
             var read = function(bytes_to_read) {
@@ -444,31 +498,36 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                 arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
                 
                 self.send(arr, function(data) {
-                    var next_read;
-                    if ((address + 64) < self.hex.bytes) {
-                        next_read = 64;
-                    } else {
-                        next_read = self.hex.bytes - address;
-                    }
-                    
-                    address += next_read;
-
-                    if (address > self.hex.bytes || next_read == 0) {
-                        if (self.verify_flash(self.hex.data, self.verify_hex)) {
-                            GUI.log('Verifying <span style="color: green">done</span>');
-                        } else {
-                            GUI.log('Verifying <span style="color: red">failed</span>');
-                        }
-                        
-                        self.upload_procedure(9);
-                    } else {
+                    if (data[1] == self.status.STATUS_CMD_OK) {
+                        // all good, continue
                         console.log('Read: 0x' + address.toString(16));
                         
-                        for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
-                            self.verify_hex.push(data[i]);
+                        var next_read;
+                        if ((address + 64) < self.hex.bytes) {
+                            next_read = 64;
+                        } else {
+                            next_read = self.hex.bytes - address;
                         }
-                        
-                        read(next_read);
+                        address += next_read;
+
+                        if (next_read == 0) {
+                            if (self.verify_flash(self.hex.data, self.verify_hex)) {
+                                GUI.log('Verifying <span style="color: green">done</span>');
+                            } else {
+                                GUI.log('Verifying <span style="color: red">failed</span>');
+                            }
+                            
+                            self.upload_procedure(9);
+                        } else {                            
+                            for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
+                                self.verify_hex.push(data[i]);
+                            }
+                            
+                            read(next_read);
+                        }
+                    } else {
+                        // failed to read
+                        self.upload_procedure(99);
                     }
                 });
             };
