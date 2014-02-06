@@ -18,7 +18,20 @@ $(document).ready(function() {
 
     // simple flash button for testing
     $('a.flash').click(function() {
-        
+        $.get("./test_fw/bs_nfet.hex", function(result) {
+            // parsing hex in different thread
+            var worker = new Worker('./js/workers/hex_parser.js');
+            
+            // "callback"
+            worker.onmessage = function (event) {
+                parsed_hex = event.data;
+                
+                console.log(parsed_hex);
+            };
+            
+            // send data/string over for processing
+            worker.postMessage(result);
+        });
     });
 });
 
