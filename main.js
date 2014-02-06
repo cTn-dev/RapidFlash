@@ -9,6 +9,11 @@ chrome.runtime.getBackgroundPage(function(result) {
 
 $(document).ready(function() {
     PortHandler.initialize();
+    
+    // alternative - window.navigator.appVersion.match(/Chrome\/([0-9.]*)/)[1];
+    GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' + 
+        'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
+        'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');    
 });
 
 // accepting single level array with "value" as key
