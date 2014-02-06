@@ -106,6 +106,8 @@ var STK500v2_protocol = function() {
     this.message_buffer = [];
     this.message_buffer_i = 0;
     this.message_crc = 0;
+    
+    this.message_callbacks = [];
 };
 
 STK500v2_protocol.prototype.initialize = function() {
@@ -121,7 +123,9 @@ STK500v2_protocol.prototype.initialize = function() {
     
     var retry = 0;
     GUI.interval_add('get_in_sync', function() {
-        self.send([self.command.CMD_SIGN_ON]);
+        self.send([self.command.CMD_SIGN_ON], function(data_array) {
+            console.log(data_array);
+        });
         
         if (retry++ >= 5) {
             GUI.interval_remove('get_in_sync');
@@ -195,12 +199,19 @@ STK500v2_protocol.prototype.read = function(readInfo) {
             case 6:
                 if (this.message_crc == data[i]) {
                     // message received, all is proper, process
-                    console.log(this.message_buffer_uint8_view);
+                    for (var j = (this.message_callbacks.length - 1); j >= 0; j--) {
+                        if (this.message_callbacks[j].sequence == this.sequence_number) {
+                            // fire callback
+                            this.message_callbacks[j].callback(this.message_buffer_uint8_view, this.message_buffer);
+                            
+                            // remove callback object
+                            // this.message_callbacks.splice(j, 1);
+                        }
+                    }
+                    this.message_callbacks = [];
                 } else {
                     // crc failed
                     console.log('crc failed, sequence: ' + this.sequence_number);
-                    console.log(this.message_buffer_uint8_view);
-                    console.log(this.message_crc + ' ' + data[i]);
                 }
                 
                 this.message_buffer_i = 0;
@@ -231,6 +242,9 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
         crc ^= bufferView[i];
     }
     bufferView[bufferView.length - 1] = crc;
+    
+    // attach callback
+    if (callback) this.message_callbacks.push({'sequence': this.sequence_number, 'callback': callback});
     
     serial.send(bufferOut, function(writeInfo) {}); 
 };
