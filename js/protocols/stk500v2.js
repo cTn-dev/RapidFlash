@@ -111,7 +111,25 @@ STK500v2_protocol.prototype.initialize = function() {
     
     serial.onReceive.addListener(function(readInfo) {
         self.read(readInfo);
-    });    
+    });
+    
+    var retry = 0;
+    GUI.interval_add('get_in_sync', function() {
+        self.send([self.command.CMD_SIGN_ON]);
+        
+        if (retry++ >= 5) {
+            GUI.interval_remove('get_in_sync');
+            GUI.log('Connection to the module <span style="color: red">failed</span>');
+            
+            serial.disconnect(function(result) {
+                if (result) { // All went as expected
+                    GUI.log('<span style="color: green">Successfully</span> closed serial connection');
+                } else { // Something went wrong
+                    GUI.log('<span style="color: red">Failed</span> to close serial port');
+                }
+            });
+        }
+    }, 1000);
 };
 
 STK500v2_protocol.prototype.read = function(readInfo) {
@@ -138,12 +156,11 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
     
     // calculate CRC
     var crc = 0;
-    for (var i = 0; i < (bufferView.length - 2); i++) {
+    for (var i = 0; i < (bufferView.length - 1); i++) {
         crc ^= bufferView[i];
     }
-    bufferView[Array.length + 5] = crc;
+    bufferView[bufferView.length - 1] = crc;
     
-    // send over the actual data
     serial.send(bufferOut, function(writeInfo) {}); 
 };
 
