@@ -70,4 +70,17 @@ a:hover {
         padding: 5px;
         
         -webkit-user-select: text;
-    } 
+    }
+#content {
+    height: 180px;
+    
+    padding: 10px;
+    
+    border: 1px solid silver;
+    background-color: white;
+    
+    overflow-y: auto;
+    overflow-x: hidden;    
+}
+.button {
+}
