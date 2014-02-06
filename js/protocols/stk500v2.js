@@ -111,7 +111,7 @@ var STK500v2_protocol = function() {
 STK500v2_protocol.prototype.initialize = function() {
     var self = this;
     
-    this.sequence_number = 1;
+    this.sequence_number = 0;
     this.bytes_flashed = 0;
     this.bytes_verified = 0;
     
@@ -151,7 +151,7 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                 }
                 break;
             case 1:
-                if (data[i] == (this.sequence_number - 1)) { // -1 because sequence_number increments in .send
+                if (data[i] == this.sequence_number) {
                     this.message_crc ^= data[i];
                     this.message_state++;
                 } else {
@@ -198,7 +198,7 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                     console.log(this.message_buffer_uint8_view);
                 } else {
                     // crc failed
-                    console.log('crc failed, sequence: ' + (this.sequence_number - 1));
+                    console.log('crc failed, sequence: ' + this.sequence_number);
                     console.log(this.message_buffer_uint8_view);
                     console.log(this.message_crc + ' ' + data[i]);
                 }
@@ -215,8 +215,10 @@ STK500v2_protocol.prototype.send = function(Array, callback) {
     var bufferOut = new ArrayBuffer(Array.length + 6); // 6 bytes protocol overhead
     var bufferView = new Uint8Array(bufferOut);
     
+    this.sequence_number++;
+    
     bufferView[0] = this.message.MESSAGE_START;
-    bufferView[1] = this.sequence_number++;
+    bufferView[1] = this.sequence_number;
     bufferView[2] = Array.length >> 8;      // MSB
     bufferView[3] = Array.length & 0x00FF;  // LSB
     bufferView[4] = this.message.TOKEN;
