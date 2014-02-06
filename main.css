@@ -34,6 +34,28 @@ a:hover {
     
     padding: 10px;
 }
+#controls {
+    height: 22px;
+    
+    margin-bottom: 10px;
+}
+    #controls select {
+        height: 20px;
+        line-height: 20px;
+        
+        margin-right: 10px;
+        
+        border: 1px solid silver;
+    }
+    #controls #port {
+        width: 120px;
+    }
+    #controls #baud {
+        width: 80px;
+    }
+    #controls #programmer {
+        /* using auto-width for now */
+    }
 #log {    
     margin-bottom: 10px;
     
