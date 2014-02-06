@@ -16,9 +16,9 @@ function start_app() {
         frame: 'native',
         resizable: false,
         minWidth: 960,
-        minHeight: 650,
+        minHeight: 357,
         maxWidth: 960,
-        maxHeight: 650
+        maxHeight: 357
     }, function(main_window) {
         main_window.onClosed.addListener(function() {
             // connectionId is passed from the script side through the chrome.runtime.getBackgroundPage refference
