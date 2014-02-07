@@ -6,7 +6,7 @@
 
 var STK500v2_protocol = function() {
     this.hex; // ref
-    this.verify_hex = [];
+    this.verify_hex;
     
     this.message = {
         MESSAGE_START:              0x1B,
