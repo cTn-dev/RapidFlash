@@ -401,7 +401,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Entered programming mode');
-                    self.upload_procedure(5);
+                    self.upload_procedure(6);
                 } else {
                     console.log('Failed to enter programming mode');
                     self.upload_procedure(99);
@@ -410,6 +410,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             break;
         case 5:
             // load address
+            /*
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Address loaded: 0x00000000');
@@ -419,123 +420,208 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     self.upload_procedure(99);
                 }
             });
+            */
             break;
         case 6:
             // flash
             GUI.log('Writing ...');
             
-            var address = 0;
+            var blocks = self.hex.data.length - 1;
+            var flashing_block = 0;
+            var bytes_flashed = 0;
+            var flashing_memory_address = self.hex.data[flashing_block].address;
             
-            var write = function(bytes_to_write) {
-                var arr = [];
-                arr[0] = self.command.CMD_PROGRAM_FLASH_ISP;
-                arr[1] = 0; // Total number of bytes to program, MSB first 
-                arr[2] = bytes_to_write; // LSB
-                arr[3] = 0xA1; // Mode byte
-                arr[4] = 10; // delay
-                arr[5] = bytes_to_write; // Command 1 (Load Page, Write Program Memory)
-                arr[6] = 0x4C; // Command 2 (Write Program Memory Page) 
-                arr[7] = 0x20; // Command 3 (Read Program Memory) 
-                arr[8] = 0xFF; // Poll Value #1 
-                arr[9] = 0x00; // Poll Value #2 (not used for flash programming)
-                
-                for (var i = 0; i < bytes_to_write; i++) {
-                    arr.push(self.hex.data[(address + i)]);
-                }
-                
-                self.send(arr, function(data) {
-                    if (data[1] == self.status.STATUS_CMD_OK) {
-                        // all good, continue
-                        console.log('Wrote: ' + address);
-                        address += bytes_to_write;
-                        
-                        var next_write;
-                        if ((address + 64) < self.hex.bytes) {
-                            next_write = 64;
-                        } else {
-                            next_write = self.hex.bytes - address;
-                        }
-                        
-                        if (address >= self.hex.bytes) {
-                            GUI.log('Writing <span style="color: green;">done</span>');
-                            self.upload_procedure(7);
-                        } else {
-                            write(next_write);
-                        }
-                    } else {
-                        // failed to write
-                        self.upload_procedure(99);
-                    }
-                });
-            };
-            
-            // start writing
-            write(64);
-            break;
-        case 7:
-            // load address
-            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
+            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Address loaded: 0x00000000');
-                    self.upload_procedure(8);
+                    console.log('Address loaded: ' + flashing_memory_address);
+                    
+                    // start writing
+                    write();
                 } else {
                     console.log('Failed to load address');
                     self.upload_procedure(99);
                 }
             });
+            
+            var write = function() {
+                if (bytes_flashed >= self.hex.data[flashing_block].bytes) {
+                    // move to another block
+                    if (flashing_block < blocks) {
+                        flashing_block++;
+                        
+                        flashing_memory_address = self.hex.data[flashing_block].address;
+                        bytes_flashed = 0;
+                        
+                        // change address
+                        self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
+                            if (data[1] == self.status.STATUS_CMD_OK) {
+                                console.log('Address loaded: ' + flashing_memory_address);
+                                
+                                // continue writing
+                                write();
+                            } else {
+                                console.log('Failed to load address');
+                                self.upload_procedure(99);
+                            }
+                        });
+                    } else {
+                        GUI.log('Writing <span style="color: green;">done</span>');
+                        self.upload_procedure(8);
+                    }
+                } else {
+                    var bytes_to_write;
+                    if ((bytes_flashed + 64) <= self.hex.data[flashing_block].bytes) {
+                        bytes_to_write = 64;
+                    } else {
+                        bytes_to_write = self.hex.data[flashing_block].bytes - bytes_flashed;
+                    }
+                    
+                    console.log('STK500V2 - Writing to: ' + flashing_memory_address);
+                
+                    var arr = [];
+                    arr[0] = self.command.CMD_PROGRAM_FLASH_ISP;
+                    arr[1] = 0; // Total number of bytes to program, MSB first 
+                    arr[2] = bytes_to_write; // LSB
+                    arr[3] = 0xA1; // Mode byte
+                    arr[4] = 10; // delay
+                    arr[5] = bytes_to_write; // Command 1 (Load Page, Write Program Memory)
+                    arr[6] = 0x4C; // Command 2 (Write Program Memory Page) 
+                    arr[7] = 0x20; // Command 3 (Read Program Memory) 
+                    arr[8] = 0xFF; // Poll Value #1 
+                    arr[9] = 0x00; // Poll Value #2 (not used for flash programming)
+                    
+                    for (var i = 0; i < bytes_to_write; i++) {
+                        arr.push(self.hex.data[flashing_block].data[bytes_flashed++]);
+                    }
+                    
+                    self.send(arr, function(data) {
+                        if (data[1] == self.status.STATUS_CMD_OK) {
+                            flashing_memory_address += bytes_to_write;
+                            // flash another page
+                            write();
+                        } else {
+                            // failed to write
+                            self.upload_procedure(99);
+                        }
+                    });
+                }
+            };
+            break;
+        case 7:
+            // load address
+            /*
+            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Address loaded: 0x00000000');
+                    self.upload_procedure(9);
+                } else {
+                    console.log('Failed to load address');
+                    self.upload_procedure(99);
+                }
+            });
+            */
             break;
         case 8:
             // read
             GUI.log('Verifying ...');
             
-            var address = 0;
+            var blocks = self.hex.data.length - 1;
+            var reading_block = 0;
+            var bytes_verified = 0;
+            var verifying_memory_address = 0;
             
-            var read = function(bytes_to_read) {
-                var arr = [];
-                arr[0] = self.command.CMD_READ_FLASH_ISP;
-                arr[1] = 0; // Total number of bytes to read, MSB first
-                arr[2] = bytes_to_read; // LSB
-                arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
-                
-                self.send(arr, function(data) {
-                    if (data[1] == self.status.STATUS_CMD_OK) {
-                        // all good, continue
-                        console.log('Read: ' + address);
+            // initialize arrays
+            for (var i = 0; i <= blocks; i++) {
+                self.verify_hex.push([]);
+            }
+            
+            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
+                if (data[1] == self.status.STATUS_CMD_OK) {
+                    console.log('Address loaded: ' + verifying_memory_address);
+                    
+                    // start reading
+                    reading();
+                } else {
+                    console.log('Failed to load address');
+                    self.upload_procedure(99);
+                }
+            });
+            
+            var reading = function() {
+                if (bytes_verified >= self.hex.data[reading_block].bytes) {
+                    // move to another block
+                    if (reading_block < blocks) {
+                        reading_block++;
                         
-                        var next_read;
-                        if ((address + 64) < self.hex.bytes) {
-                            next_read = 64;
-                        } else {
-                            next_read = self.hex.bytes - address;
-                        }
-                        address += next_read;
-
-                        if (next_read == 0) {
-                            if (self.verify_flash(self.hex.data, self.verify_hex)) {
-                                GUI.log('Verifying <span style="color: green">done</span>');
-                                GUI.log('Programming: <span style="color: green;">SUCCESSFUL</span>');
+                        verifying_memory_address = self.hex.data[reading_block].address;
+                        bytes_verified = 0;
+                        
+                        // change address
+                        self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
+                            if (data[1] == self.status.STATUS_CMD_OK) {
+                                console.log('Address loaded: ' + verifying_memory_address);
+                                
+                                // continue reading
+                                reading();
                             } else {
-                                GUI.log('Verifying <span style="color: red">failed</span>');
-                                GUI.log('Programming: <span style="color: red;">FAILED</span>');
+                                console.log('Failed to load address');
+                                self.upload_procedure(99);
                             }
-                            
-                            self.upload_procedure(9);
-                        } else {                            
-                            for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
-                                self.verify_hex.push(data[i]);
-                            }
-                            
-                            read(next_read);
-                        }
+                        });
                     } else {
-                        // failed to read
-                        self.upload_procedure(99);
+                        // all blocks read, verify
+                        
+                        var verify = true;
+                        for (var i = 0; i <= blocks; i++) {
+                            verify = self.verify_flash(self.hex.data[i].data, self.verify_hex[i]);
+                            
+                            if (!verify) break;
+                        }
+                        
+                        if (verify) {
+                            GUI.log('Verifying <span style="color: green">done</span>');
+                            GUI.log('Programming: <span style="color: green;">SUCCESSFUL</span>');
+                        } else {
+                            GUI.log('Verifying <span style="color: red">failed</span>');
+                            GUI.log('Programming: <span style="color: red;">FAILED</span>');
+                        }
+                        
+                        self.upload_procedure(9);
                     }
-                });
+                } else {
+                    var bytes_to_read;
+                    if ((bytes_verified + 128) <= self.hex.data[reading_block].bytes) {
+                        bytes_to_read = 128;
+                    } else {
+                        bytes_to_read = self.hex.data[reading_block].bytes - bytes_verified;
+                    }
+                    
+                    console.log('STK500V2 - Reading from: ' + verifying_memory_address);
+                    
+                    var arr = [];
+                    arr[0] = self.command.CMD_READ_FLASH_ISP;
+                    arr[1] = 0; // Total number of bytes to read, MSB first
+                    arr[2] = bytes_to_read; // LSB
+                    arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
+                    
+                    self.send(arr, function(data) {
+                        if (data[1] == self.status.STATUS_CMD_OK) {
+                            for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
+                                self.verify_hex[reading_block].push(data[i]);
+                                bytes_verified++;
+                            }
+                            
+                            verifying_memory_address += bytes_to_read;
+                            
+                            // verify another page
+                            reading();
+                        } else {
+                            // failed to read
+                            self.upload_procedure(99);
+                        }
+                    });
+                }
             };
-            
-            // start reading
-            read(64);
             break;
         case 9:
             // leave programming mode            
