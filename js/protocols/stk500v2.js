@@ -298,10 +298,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Entered programming mode');
+                    console.log('STK500V2 - Entered programming mode');
                     self.upload_procedure(3);
                 } else {
-                    console.log('Failed to enter programming mode');
+                    console.log('STK500V2 - Failed to enter programming mode');
                     self.upload_procedure(99);
                 }
             });
@@ -374,10 +374,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Chip erased');
+                    console.log('STK500V2 - Chip erased');
                     self.upload_procedure(4);
                 } else {
-                    console.log('failed to erase chip');
+                    console.log('STK500V2 - Failed to erase chip');
                     self.upload_procedure(99);
                 }
             });
@@ -400,10 +400,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Entered programming mode');
+                    console.log('STK500V2 - Entered programming mode');
                     self.upload_procedure(5);
                 } else {
-                    console.log('Failed to enter programming mode');
+                    console.log('STK500V2 - Failed to enter programming mode');
                     self.upload_procedure(99);
                 }
             });
@@ -419,12 +419,12 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Address loaded: ' + flashing_memory_address);
+                    console.log('STK500V2 - Address loaded: ' + flashing_memory_address);
                     
                     // start writing
                     write();
                 } else {
-                    console.log('Failed to load address');
+                    console.log('STK500V2 - Failed to load address');
                     self.upload_procedure(99);
                 }
             });
@@ -441,12 +441,12 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         // change address
                         self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
                             if (data[1] == self.status.STATUS_CMD_OK) {
-                                console.log('Address loaded: ' + flashing_memory_address);
+                                console.log('STK500V2 - Address loaded: ' + flashing_memory_address);
                                 
                                 // continue writing
                                 write();
                             } else {
-                                console.log('Failed to load address');
+                                console.log('STK500V2 - Failed to load address');
                                 self.upload_procedure(99);
                             }
                         });
@@ -462,7 +462,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         bytes_to_write = self.hex.data[flashing_block].bytes - bytes_flashed;
                     }
                     
-                    console.log('STK500V2 - Writing to: ' + flashing_memory_address);
+                    console.log('STK500V2 - Writing to: ' + flashing_memory_address + ', ' + bytes_to_write + ' bytes');
                 
                     var arr = [];
                     arr[0] = self.command.CMD_PROGRAM_FLASH_ISP;
@@ -509,12 +509,12 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Address loaded: ' + verifying_memory_address);
+                    console.log('STK500V2 - Address loaded: ' + verifying_memory_address);
                     
                     // start reading
                     reading();
                 } else {
-                    console.log('Failed to load address');
+                    console.log('STK500V2 - Failed to load address');
                     self.upload_procedure(99);
                 }
             });
@@ -531,12 +531,12 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         // change address
                         self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
                             if (data[1] == self.status.STATUS_CMD_OK) {
-                                console.log('Address loaded: ' + verifying_memory_address);
+                                console.log('STK500V2 - Address loaded: ' + verifying_memory_address);
                                 
                                 // continue reading
                                 reading();
                             } else {
-                                console.log('Failed to load address');
+                                console.log('STK500V2 - Failed to load address');
                                 self.upload_procedure(99);
                             }
                         });
@@ -562,13 +562,13 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     }
                 } else {
                     var bytes_to_read;
-                    if ((bytes_verified + 128) <= self.hex.data[reading_block].bytes) {
-                        bytes_to_read = 128;
+                    if ((bytes_verified + 64) <= self.hex.data[reading_block].bytes) {
+                        bytes_to_read = 64;
                     } else {
                         bytes_to_read = self.hex.data[reading_block].bytes - bytes_verified;
                     }
                     
-                    console.log('STK500V2 - Reading from: ' + verifying_memory_address);
+                    console.log('STK500V2 - Reading from: ' + verifying_memory_address + ', ' + bytes_to_read + ' bytes');
                     
                     var arr = [];
                     arr[0] = self.command.CMD_READ_FLASH_ISP;
@@ -603,7 +603,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[2] = 1; // Post-delay (in ms)
             
             self.send(arr, function(data) {
-                console.log('Left Programming Mode');
+                console.log('STK500V2 - Left Programming Mode');
                 self.upload_procedure(99);
             });
             break;
