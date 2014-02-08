@@ -401,7 +401,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('Entered programming mode');
-                    self.upload_procedure(6);
+                    self.upload_procedure(5);
                 } else {
                     console.log('Failed to enter programming mode');
                     self.upload_procedure(99);
@@ -409,20 +409,6 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             });
             break;
         case 5:
-            // load address
-            /*
-            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
-                if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Address loaded: 0x00000000');
-                    self.upload_procedure(6);
-                } else {
-                    console.log('Failed to load address');
-                    self.upload_procedure(99);
-                }
-            });
-            */
-            break;
-        case 6:
             // flash
             GUI.log('Writing ...');
             
@@ -466,7 +452,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         });
                     } else {
                         GUI.log('Writing <span style="color: green;">done</span>');
-                        self.upload_procedure(8);
+                        self.upload_procedure(6);
                     }
                 } else {
                     var bytes_to_write;
@@ -507,21 +493,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                 }
             };
             break;
-        case 7:
-            // load address
-            /*
-            self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, 0x00, 0x00], function(data) {
-                if (data[1] == self.status.STATUS_CMD_OK) {
-                    console.log('Address loaded: 0x00000000');
-                    self.upload_procedure(9);
-                } else {
-                    console.log('Failed to load address');
-                    self.upload_procedure(99);
-                }
-            });
-            */
-            break;
-        case 8:
+        case 6:
             // read
             GUI.log('Verifying ...');
             
@@ -586,7 +558,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                             GUI.log('Programming: <span style="color: red;">FAILED</span>');
                         }
                         
-                        self.upload_procedure(9);
+                        self.upload_procedure(7);
                     }
                 } else {
                     var bytes_to_read;
@@ -623,7 +595,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                 }
             };
             break;
-        case 9:
+        case 7:
             // leave programming mode            
             var arr = [];
             arr[0] = self.command.CMD_LEAVE_PROGMODE_ISP;
