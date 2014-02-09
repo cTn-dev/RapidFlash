@@ -2,6 +2,9 @@
     [MESSAGE_START 1b][SEQUENCE_NUMBER 1b][MESSAGE_SIZE 2b, MSB first][TOKEN 1b][MESSAGE_BODY 0-65535b][CHECKSUM 1b]
     
     CHECKSUM = Uses all characters in message including MESSAGE_START and MESSAGE_BODY, XOR of all bytes
+    
+    ATmega8  1e9307
+    ATmega8A 1e9307
 */
 
 var STK500v2_protocol = function() {
@@ -299,7 +302,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Entered programming mode');
-                    self.upload_procedure(3);
+                    self.upload_procedure(2);
                 } else {
                     console.log('STK500V2 - Failed to enter programming mode');
                     self.upload_procedure(99);
@@ -307,9 +310,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             });
             break;
         case 2:
-            // no idea what happens here for now (skipped for now)
-            var needle = 0;
+            // read signature
+            var signature = 0;
             var arr = [[], [], []];
+            var needle = 0;
             
             // first set
             arr[0][0] = this.command.CMD_SPI_MULTI;
@@ -346,13 +350,20 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             
             var send_spi = function() {
                 self.send(arr[needle], function(data) {
-                    console.log(data);
+                    signature |= data[5] << (8 * (2 - needle));
                     
                     needle++;
                     if (needle < 3) {
                         send_spi();
                     } else {
-                        self.upload_procedure(3);
+                        // run verification over here
+                        if (signature == 0x1e9307) {
+                            GUI.log('Chip recognized as <strong>ATmega8 / ATmega8A</strong>');
+                            self.upload_procedure(3);
+                        } else {
+                            GUI.log('Chip unsupported, sorry :-(');
+                            self.upload_procedure(99);
+                        }
                     }
                 });
             };
