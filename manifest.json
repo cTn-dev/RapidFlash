@@ -16,6 +16,7 @@
         "https://www.google-analytics.com/",
         "serial",
         "storage",
+        "fileSystem",
         "notifications"
     ]
 }

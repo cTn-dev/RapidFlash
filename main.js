@@ -21,7 +21,60 @@ $(document).ready(function() {
     }
     
 
-    // simple flash button for testing
+    $('a.load').click(function() {
+        chrome.fileSystem.chooseEntry({type: 'openFile', accepts: [{extensions: ['hex']}]}, function(fileEntry) {
+            if (!fileEntry) {
+                // no "valid" file selected/created, aborting
+                console.log('No valid file selected, aborting');
+                return;
+            }
+            
+            chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
+                console.log('Loading file from: ' + path);
+                
+                fileEntry.file(function(file) {
+                    var reader = new FileReader();
+                    
+                    reader.onprogress = function(e) {
+                        if (e.total > 1048576) { // 1 MB
+                            // dont allow reading files bigger then 1 MB
+                            console.log('File limit (1 MB) exceeded, aborting');
+                            GUI.log('File limit (1 MB) <span style="color: red">exceeded</span>, aborting');
+                            reader.abort();
+                        }
+                    };
+                    
+                    reader.onloadend = function(e) {
+                        if (e.total != 0 && e.total == e.loaded) {
+                            console.log('File loaded');
+                            
+                            // parsing hex in different thread
+                            var worker = new Worker('./js/workers/hex_parser.js');
+                            
+                            // "callback"
+                            worker.onmessage = function (event) {
+                                parsed_hex = event.data;
+                                
+                                if (parsed_hex) {
+                                } else {
+                                    GUI.log('HEX file appears to be <span style="color: red">corrupted</span>');
+                                }
+                            };
+                            
+                            // send data/string over for processing
+                            worker.postMessage(e.target.result);
+                        }
+                    };
+
+                    reader.readAsText(file);
+                });
+            });
+        });
+    });
+    
+    $('a.save').click(function() {
+    });
+    
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
             /*
