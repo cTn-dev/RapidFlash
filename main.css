@@ -50,11 +50,11 @@ a:hover {
     #controls #port {
         width: 120px;
     }
-    #controls #baud {
-        width: 80px;
-    }
     #controls #programmer {
         /* using auto-width for now */
+    }
+    #controls #firmware {
+        width: 100px;
     }
 #log {    
     margin-bottom: 10px;
@@ -82,13 +82,6 @@ a:hover {
     overflow-y: auto;
     overflow-x: hidden;    
 }
-    #content select[name="firmware"] {
-        width: 100px;
-        height: 20px;
-        
-        line-height: 20px;
-        border: 1px solid silver;
-    }
 .button {
     display: block;
     
