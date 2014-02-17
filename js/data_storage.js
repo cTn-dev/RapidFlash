@@ -27,3 +27,8 @@ var firmware_type = [
     'tp_nfet',
     'tp70a'
 ];
+
+var ihex = {
+    raw:    undefined,
+    parsed: undefined,
+};

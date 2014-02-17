@@ -29,6 +29,10 @@ $(document).ready(function() {
                 return;
             }
             
+            // reset default ihex properties
+            ihex.raw = false;
+            ihex.parsed = false;
+            
             chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
                 console.log('Loading file from: ' + path);
                 
@@ -53,13 +57,15 @@ $(document).ready(function() {
                             
                             // "callback"
                             worker.onmessage = function (event) {
-                                parsed_hex = event.data;
-                                
-                                if (parsed_hex) {
+                                if (event.data) {
+                                    ihex.parsed = event.data;
                                 } else {
                                     GUI.log('HEX file appears to be <span style="color: red">corrupted</span>');
                                 }
                             };
+                            
+                            // save raw data structure
+                            ihex.raw = e.target.result;
                             
                             // send data/string over for processing
                             worker.postMessage(e.target.result);
@@ -73,8 +79,10 @@ $(document).ready(function() {
     });
     
     $('a.save').click(function() {
-        // we could parse the name as variable
-        chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: 'firmware_test', accepts: [{extensions: ['hex']}]}, function(fileEntry) {
+        // TODO some sort of validation
+        var name = $('select#firmware').val();
+        
+        chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
             if (!fileEntry) {
                 // no "valid" file selected/created, aborting
                 console.log('No valid file selected, aborting');
@@ -89,10 +97,8 @@ $(document).ready(function() {
                 chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
                     // check if file is writable
                     chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
-                        if (isWritable) {
-                            var hex = "Real hex content goes here";
-                            
-                            var blob = new Blob([hex], {type: 'text/plain'}); // first parameter for Blob needs to be an array
+                        if (isWritable) {                            
+                            var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
                             
                             fileEntryWritable.createWriter(function(writer) {
                                 writer.onerror = function (e) {

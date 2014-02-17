@@ -54,7 +54,7 @@ a:hover {
         /* using auto-width for now */
     }
     #controls #firmware {
-        width: 100px;
+        width: 120px;
     }
 #log {    
     margin-bottom: 10px;
@@ -82,6 +82,17 @@ a:hover {
     overflow-y: auto;
     overflow-x: hidden;    
 }
+#options {
+    height: 150px;
+}
+    #options .title {
+        padding-bottom: 5px;
+        
+        font-weight: bold;
+        text-align: center;
+        
+        border-bottom: 1px dashed silver;
+    }
 .buttons {    
     height: 28px;
 }
