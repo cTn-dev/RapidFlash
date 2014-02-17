@@ -144,22 +144,46 @@ $(document).ready(function() {
     
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
-            /*
-            $.get("./test_fw/bs_nfet.hex", function(result) {
-                // parsing hex in different thread
-                var worker = new Worker('./js/workers/hex_parser.js');
-                
-                // "callback"
-                worker.onmessage = function (event) {
-                    parsed_hex = event.data;
+            if ($('select#programmer').val() != '0') {
+                if ($('select#firmware').val() != '0') {
+                    // process options here (temporary solution while compile server is offline)
+                    //damn this is nasty :-( (but will do for now)
+                    var comp = 0
+                    if ($('#options[name="comp_pwm"]').is(':checked')) comp = 1;
                     
-                    beging_upload(parsed_hex);
-                };
-                
-                // send data/string over for processing
-                worker.postMessage(result);
-            });
-            */
+                    var reverse = 0;
+                    if ($('#options[name="motor_reverse"]').is(':checked')) reverse = 1;
+
+                    var dir = '';
+                    if (!comp && !reverse) dir = 'normal_forward';
+                    else if (comp && !reverse) dir = 'comppwm_forward';
+                    else if (!comp && revese) dir = 'normal_reverse';
+                    else if (comp && reverse) dir = 'comppwm_reverse';
+                    
+                    // load the firmware
+                    var firmware_name = $('select#firmware').val() + '_' + dir;
+                    $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
+                        ihex.raw = result;
+                        
+                        // parsing hex in different thread
+                        var worker = new Worker('./js/workers/hex_parser.js');
+                        
+                        // "callback"
+                        worker.onmessage = function (event) {
+                            ihex.parsed = event.data;
+                            
+                            beging_upload(ihex.parsed);
+                        };
+                        
+                        // send data/string over for processing
+                        worker.postMessage(result);
+                    });
+                } else {
+                    GUI.log('Please select firmware from the menu');
+                }
+            } else {
+                GUI.log('Please select programmer from the menu');
+            }
         }
     });
     
