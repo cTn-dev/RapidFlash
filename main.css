@@ -86,12 +86,32 @@ a:hover {
     height: 150px;
 }
     #options .title {
+        margin-bottom: 10px;
         padding-bottom: 5px;
         
         font-weight: bold;
         text-align: center;
         
         border-bottom: 1px dashed silver;
+    }
+    #options dl {
+    }
+    #options dt {
+        float: left;
+        
+        width: 20px;
+        height: 22px;
+        
+        line-height: 20px;
+    }
+        #options dt input[type="checkbox"] {
+            vertical-align: middle;
+        }
+    #options dd {
+        height: 22px;
+        line-height: 22px;
+        
+        margin-left: 20px;
     }
 .buttons {    
     height: 28px;

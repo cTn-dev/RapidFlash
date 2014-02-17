@@ -15,12 +15,30 @@ $(document).ready(function() {
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
         'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');
     
+    // generate list of firmwares
     var e_firmware = $('select#firmware');
     for (var i = 0; i < firmware_type.length; i++) {
         e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
     }
     
-
+    // UI hooks
+    // disable all firmware options in the start
+    $('select#firmware').change(function() {
+        var val = $(this).val();
+        
+        if (val != '0') {
+            $('#options input:disabled').each(function() {
+                $(this).prop('disabled', false);
+            });
+        } else {
+            $('#options input:enabled').each(function() {
+                $(this).prop('disabled', true);
+            });
+        }
+    }).change();
+    
+    
+    // UI hooks for primary content controls
     $('a.load').click(function() {
         chrome.fileSystem.chooseEntry({type: 'openFile', accepts: [{extensions: ['hex']}]}, function(fileEntry) {
             if (!fileEntry) {
