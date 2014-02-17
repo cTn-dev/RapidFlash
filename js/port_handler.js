@@ -105,7 +105,7 @@ port_handler.prototype.update_port_select = function(ports) {
             $('div#controls #port').append($("<option/>", {value: ports[i], text: ports[i]}));
         }
     } else {
-        $('div#controls #port').append($("<option/>", {value: 0, text: 'NOT FOUND'}));
+        $('div#controls #port').append($("<option/>", {value: 0, text: 'No Ports'}));
     }  
 };
 
@@ -148,3 +148,22 @@ port_handler.prototype.port_removed = function(name, code, timeout) {
 };
 
 var PortHandler = new port_handler();
+
+
+// accepting single level array with "value" as key
+function array_difference(firstArray, secondArray) {
+    var cloneArray = [];
+    
+    // create hardcopy
+    for (var i = 0; i < firstArray.length; i++) {
+        cloneArray.push(firstArray[i]);
+    }
+    
+    for (var i = 0; i < secondArray.length; i++) {
+        if (cloneArray.indexOf(secondArray[i]) != -1) {
+            cloneArray.splice(cloneArray.indexOf(secondArray[i]), 1);
+        }
+    }
+    
+    return cloneArray;
+}

@@ -15,10 +15,16 @@ $(document).ready(function() {
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
         'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');
     
+    var e_firmware = $('select[name="firmware"]');
+    for (var i = 0; i < firmware_type.length; i++) {
+        e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
+    }
+    
 
     // simple flash button for testing
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
+            /*
             $.get("./test_fw/bs_nfet.hex", function(result) {
                 // parsing hex in different thread
                 var worker = new Worker('./js/workers/hex_parser.js');
@@ -33,6 +39,7 @@ $(document).ready(function() {
                 // send data/string over for processing
                 worker.postMessage(result);
             });
+            */
         }
     });
     
@@ -47,21 +54,3 @@ $(document).ready(function() {
         }
     };
 });
-
-// accepting single level array with "value" as key
-function array_difference(firstArray, secondArray) {
-    var cloneArray = [];
-    
-    // create hardcopy
-    for (var i = 0; i < firstArray.length; i++) {
-        cloneArray.push(firstArray[i]);
-    }
-    
-    for (var i = 0; i < secondArray.length; i++) {
-        if (cloneArray.indexOf(secondArray[i]) != -1) {
-            cloneArray.splice(cloneArray.indexOf(secondArray[i]), 1);
-        }
-    }
-    
-    return cloneArray;
-}
