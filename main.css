@@ -82,21 +82,34 @@ a:hover {
     overflow-y: auto;
     overflow-x: hidden;    
 }
-.button {
-    display: block;
-    
-    width: 30px;
-    height: 26px;
-    line-height: 26px;
-    
-    padding: 0 10px 0 10px;
-    
-    text-align: center;
-    font-weight: bold;
-  
-    border: 1px solid silver;
-    background-color: #ececec;  
+.buttons {    
+    height: 28px;
 }
-.button:hover {
-    background-color: #dedcdc;
-}
+    .buttons .load {
+        float: left;
+    }
+    .buttons .save {
+        float: left;
+        
+        margin-left: 10px;
+    }
+    .buttons .flash {
+        float: right;
+    }
+    .buttons a {
+        display: block;
+        
+        height: 26px;
+        line-height: 26px;
+        
+        padding: 0 10px 0 10px;
+        
+        text-align: center;
+        font-weight: bold;
+      
+        border: 1px solid silver;
+        background-color: #ececec;
+    }
+    .buttons a:hover {
+        background-color: #dedcdc;
+    }
