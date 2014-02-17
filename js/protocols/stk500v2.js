@@ -127,7 +127,7 @@ STK500v2_protocol.prototype.initialize = function() {
         self.send([self.command.CMD_SIGN_ON], function(data_array) {
             GUI.interval_remove('get_in_sync');
             
-            console.log('Programmer in sync');
+            console.log('STK500V2 - Programmer in sync');
             
             self.upload_procedure(1);
         });
