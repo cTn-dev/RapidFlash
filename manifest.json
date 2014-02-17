@@ -17,6 +17,7 @@
         "serial",
         "storage",
         "fileSystem",
+        "fileSystem.write",
         "notifications"
     ]
 }
