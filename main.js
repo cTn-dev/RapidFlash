@@ -149,19 +149,21 @@ $(document).ready(function() {
                     // process options here (temporary solution while compile server is offline)
                     //damn this is nasty :-( (but will do for now)
                     var comp = 0
-                    if ($('#options[name="comp_pwm"]').is(':checked')) comp = 1;
+                    if ($('#options input[name="comp_pwm"]').is(':checked')) comp = 1;
                     
                     var reverse = 0;
-                    if ($('#options[name="motor_reverse"]').is(':checked')) reverse = 1;
+                    if ($('#options input[name="motor_reverse"]').is(':checked')) reverse = 1;
 
                     var dir = '';
                     if (!comp && !reverse) dir = 'normal_forward';
                     else if (comp && !reverse) dir = 'comppwm_forward';
-                    else if (!comp && revese) dir = 'normal_reverse';
+                    else if (!comp && reverse) dir = 'normal_reverse';
                     else if (comp && reverse) dir = 'comppwm_reverse';
+                    
                     
                     // load the firmware
                     var firmware_name = $('select#firmware').val() + '_' + dir;
+                    console.log('./firmware/' + dir + '/' + firmware_name + '.hex');
                     $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
                         ihex.raw = result;
                         
