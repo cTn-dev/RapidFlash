@@ -12,8 +12,8 @@ port_handler.prototype.initialize = function() {
     GUI.interval_add('port_handler', function() {
         serial.getDevices(function(current_ports) {
             // port got removed or initial_ports wasn't initialized yet
-            if (self.initial_ports.length > current_ports.length || !self.initial_ports) {
-                var removed_ports = array_difference(self.initial_ports, current_ports);
+            if (self.array_difference(self.initial_ports, current_ports).length > 0 || !self.initial_ports) {
+                var removed_ports = self.array_difference(self.initial_ports, current_ports);
                 
                 if (self.initial_ports != false) {
                     if (removed_ports.length > 1) {
@@ -57,11 +57,18 @@ port_handler.prototype.initialize = function() {
                     });
                 }
                 
-                self.initial_ports = current_ports;
+                if (!self.initial_ports) {
+                    // initialize
+                    self.initial_ports = current_ports;
+                } else {
+                    for (var i = 0; i < removed_ports.length; i++) {
+                        self.initial_ports.splice(self.initial_ports.indexOf(removed_ports[i]), 1);
+                    }
+                }
             }
             
             // new port detected
-            var new_ports = array_difference(current_ports, self.initial_ports);
+            var new_ports = self.array_difference(current_ports, self.initial_ports);
             
             if (new_ports.length) {
                 if (new_ports.length > 1) {
@@ -147,11 +154,8 @@ port_handler.prototype.port_removed = function(name, code, timeout) {
     this.port_removed_callbacks.push(obj);
 };
 
-var PortHandler = new port_handler();
-
-
 // accepting single level array with "value" as key
-function array_difference(firstArray, secondArray) {
+port_handler.prototype.array_difference = function(firstArray, secondArray) {
     var cloneArray = [];
     
     // create hardcopy
@@ -166,4 +170,6 @@ function array_difference(firstArray, secondArray) {
     }
     
     return cloneArray;
-}
+};
+
+var PortHandler = new port_handler();
