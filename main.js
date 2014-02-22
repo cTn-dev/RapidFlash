@@ -96,6 +96,8 @@ $(document).ready(function() {
         });
     });
     
+    // TODO file will only contain "undefined" string if hex parser wasn't call before (ihex.raw will be undefined)
+    // we should probably lock the save button while ihex.raw isn't ready
     $('a.save').click(function() {
         // TODO some sort of validation
         var name = $('select#firmware').val();
@@ -123,7 +125,16 @@ $(document).ready(function() {
                                     console.error(e);
                                 };
                                 
+                                var truncated = false;
                                 writer.onwriteend = function() {
+                                    if (!truncated) {
+                                        // onwriteend will be fired again when truncation is finished
+                                        truncated = true;
+                                        writer.truncate(ihex.raw.length);
+                                        
+                                        return;
+                                    }
+                                    
                                     // all went fine
                                     callback(true);
                                 };
