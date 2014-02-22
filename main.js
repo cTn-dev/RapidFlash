@@ -130,7 +130,7 @@ $(document).ready(function() {
                                     if (!truncated) {
                                         // onwriteend will be fired again when truncation is finished
                                         truncated = true;
-                                        writer.truncate(ihex.raw.length);
+                                        writer.truncate(blob.size);
                                         
                                         return;
                                     }
