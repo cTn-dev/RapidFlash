@@ -9,23 +9,23 @@ chrome.runtime.getBackgroundPage(function(result) {
 
 $(document).ready(function() {
     PortHandler.initialize();
-    
+
     // alternative - window.navigator.appVersion.match(/Chrome\/([0-9.]*)/)[1];
-    GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' + 
+    GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' +
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
         'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');
-    
+
     // generate list of firmwares
     var e_firmware = $('select#firmware');
     for (var i = 0; i < firmware_type.length; i++) {
         e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
     }
-    
+
     // UI hooks
     // disable all firmware options in the start
     $('select#firmware').change(function() {
         var val = $(this).val();
-        
+
         if (val != '0') {
             $('#options input:disabled').each(function() {
                 $(this).prop('disabled', false);
@@ -36,8 +36,8 @@ $(document).ready(function() {
             });
         }
     }).change();
-    
-    
+
+
     // UI hooks for primary content controls
     $('a.load').click(function() {
         chrome.fileSystem.chooseEntry({type: 'openFile', accepts: [{extensions: ['hex']}]}, function(fileEntry) {
@@ -46,17 +46,17 @@ $(document).ready(function() {
                 console.log('No valid file selected, aborting');
                 return;
             }
-            
+
             // reset default ihex properties
             ihex.raw = false;
             ihex.parsed = false;
-            
+
             chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
                 console.log('Loading file from: ' + path);
-                
+
                 fileEntry.file(function(file) {
                     var reader = new FileReader();
-                    
+
                     reader.onprogress = function(e) {
                         if (e.total > 1048576) { // 1 MB
                             // dont allow reading files bigger then 1 MB
@@ -65,14 +65,14 @@ $(document).ready(function() {
                             reader.abort();
                         }
                     };
-                    
+
                     reader.onloadend = function(e) {
                         if (e.total != 0 && e.total == e.loaded) {
                             console.log('File loaded');
-                            
+
                             // parsing hex in different thread
                             var worker = new Worker('./js/workers/hex_parser.js');
-                            
+
                             // "callback"
                             worker.onmessage = function (event) {
                                 if (event.data) {
@@ -81,10 +81,10 @@ $(document).ready(function() {
                                     GUI.log('HEX file appears to be <span style="color: red">corrupted</span>');
                                 }
                             };
-                            
+
                             // save raw data structure
                             ihex.raw = e.target.result;
-                            
+
                             // send data/string over for processing
                             worker.postMessage(e.target.result);
                         }
@@ -95,50 +95,50 @@ $(document).ready(function() {
             });
         });
     });
-    
+
     // TODO file will only contain "undefined" string if hex parser wasn't call before (ihex.raw will be undefined)
     // we should probably lock the save button while ihex.raw isn't ready
     $('a.save').click(function() {
         // TODO some sort of validation
         var name = $('select#firmware').val();
-        
+
         chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
             if (!fileEntry) {
                 // no "valid" file selected/created, aborting
                 console.log('No valid file selected, aborting');
                 return;
             }
-            
+
             chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
                 console.log('Saving firmware to: ' + path);
                 GUI.log('Saving firmware to: <strong>' + path + '</strong>');
-                
+
                 // change file entry from read only to read/write
                 chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
                     // check if file is writable
                     chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
-                        if (isWritable) {                            
+                        if (isWritable) {
                             var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
-                            
+
                             fileEntryWritable.createWriter(function(writer) {
                                 writer.onerror = function (e) {
                                     console.error(e);
                                 };
-                                
+
                                 var truncated = false;
                                 writer.onwriteend = function() {
                                     if (!truncated) {
                                         // onwriteend will be fired again when truncation is finished
                                         truncated = true;
                                         writer.truncate(blob.size);
-                                        
+
                                         return;
                                     }
-                                    
+
                                     // all went fine
                                     callback(true);
                                 };
-                                
+
                                 writer.write(blob);
                             }, function (e) {
                                 console.error(e);
@@ -152,7 +152,7 @@ $(document).ready(function() {
             });
         });
     });
-    
+
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
             if ($('select#programmer').val() != '0') {
@@ -161,7 +161,7 @@ $(document).ready(function() {
                     //damn this is nasty :-( (but will do for now)
                     var comp = 0
                     if ($('#options input[name="comp_pwm"]').is(':checked')) comp = 1;
-                    
+
                     var reverse = 0;
                     if ($('#options input[name="motor_reverse"]').is(':checked')) reverse = 1;
 
@@ -170,24 +170,24 @@ $(document).ready(function() {
                     else if (comp && !reverse) dir = 'comppwm_forward';
                     else if (!comp && reverse) dir = 'normal_reverse';
                     else if (comp && reverse) dir = 'comppwm_reverse';
-                    
-                    
+
+
                     // load the firmware
                     var firmware_name = $('select#firmware').val() + '_' + dir;
                     console.log('./firmware/' + dir + '/' + firmware_name + '.hex');
                     $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
                         ihex.raw = result;
-                        
+
                         // parsing hex in different thread
                         var worker = new Worker('./js/workers/hex_parser.js');
-                        
+
                         // "callback"
                         worker.onmessage = function (event) {
                             ihex.parsed = event.data;
-                            
+
                             beging_upload(ihex.parsed);
                         };
-                        
+
                         // send data/string over for processing
                         worker.postMessage(result);
                     });
@@ -199,7 +199,7 @@ $(document).ready(function() {
             }
         }
     });
-    
+
     var beging_upload = function(hex) {
         switch($('select#programmer').val()) {
             case 'turnigy_usb_linker':

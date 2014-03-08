@@ -1,8 +1,8 @@
 /*
     [MESSAGE_START 1b][SEQUENCE_NUMBER 1b][MESSAGE_SIZE 2b, MSB first][TOKEN 1b][MESSAGE_BODY 0-65535b][CHECKSUM 1b]
-    
+
     CHECKSUM = Uses all characters in message including MESSAGE_START and MESSAGE_BODY, XOR of all bytes
-    
+
     ATmega8  1e9307
     ATmega8A 1e9307
 */
@@ -10,13 +10,13 @@
 var STK500v2_protocol = function() {
     this.hex; // ref
     this.verify_hex;
-    
+
     this.message = {
         MESSAGE_START:              0x1B,
         TOKEN:                      0x0E,
         ANSWER_CKSUM_ERROR:         0xB0
     };
-    
+
     this.command = {
         CMD_SIGN_ON:                0x01,
         CMD_SET_PARAMETER:          0x02,
@@ -25,7 +25,7 @@ var STK500v2_protocol = function() {
         CMD_OSCCAL:                 0x05,
         CMD_LOAD_ADDRESS:           0x06,
         CMD_FIRMWARE_UPGRADE:       0x07,
-        
+
         CMD_ENTER_PROGMODE_ISP:     0x10,
         CMD_LEAVE_PROGMODE_ISP:     0x11,
         CMD_CHIP_ERASE_ISP:         0x12,
@@ -40,7 +40,7 @@ var STK500v2_protocol = function() {
         CMD_READ_SIGNATURE_ISP:     0x1B,
         CMD_READ_OSCCAL_ISP:        0x1C,
         CMD_SPI_MULTI:              0x1D,
-        
+
         CMD_ENTER_PROGMODE_PP:      0x20,
         CMD_LEAVE_PROGMODE_PP:      0x21,
         CMD_CHIP_ERASE_PP:          0x22,
@@ -55,7 +55,7 @@ var STK500v2_protocol = function() {
         CMD_READ_SIGNATURE_PP:      0x2B,
         CMD_READ_OSCCAL_PP:         0x2C,
         CMD_SET_CONTROL_STACK:      0x2D,
-        
+
         CMD_ENTER_PROGMODE_HVSP:    0x30,
         CMD_LEAVE_PROGMODE_HVSP:    0x31,
         CMD_CHIP_ERASE_HVSP:        0x32,
@@ -70,7 +70,7 @@ var STK500v2_protocol = function() {
         CMD_READ_SIGNATURE_HVSP:    0x3B,
         CMD_READ_OSCCAL_HVSP:       0x3C
     };
-    
+
     this.status = {
         STATUS_CMD_OK:              0x00,
         STATUS_CMD_TOUT:            0x80,
@@ -80,7 +80,7 @@ var STK500v2_protocol = function() {
         STATUS_CKSUM_ERROR:         0xC1,
         STATUS_CMD_UNKNOWN:         0xC9
     };
-    
+
     this.param = {
         PARAM_BUILD_NUMBER_LOW:     0x80,
         PARAM_BUILD_NUMBER_HIGH:    0x81,
@@ -98,44 +98,44 @@ var STK500v2_protocol = function() {
         PARAM_RESET_POLARITY:       0x9E,
         PARAM_CONTROLLER_INIT:      0x9F
     };
-    
+
     // state machine variables
     this.sequence_number;
-    
+
     this.message_state = 0;
     this.message_size = 0;
     this.message_buffer = [];
     this.message_buffer_i = 0;
     this.message_crc = 0;
-    
+
     this.message_callbacks = [];
 };
 
 STK500v2_protocol.prototype.initialize = function() {
     var self = this;
-    
+
     this.verify_hex = [];
-    
+
     this.sequence_number = 0;
-    
+
     serial.onReceive.addListener(function(readInfo) {
         self.read(readInfo);
     });
-    
+
     var retry = 0;
     GUI.interval_add('get_in_sync', function() {
         self.send([self.command.CMD_SIGN_ON], function(data_array) {
             GUI.interval_remove('get_in_sync');
-            
+
             console.log('STK500V2 - Programmer in sync');
-            
+
             self.upload_procedure(1);
         });
-        
+
         if (retry++ >= 5) {
             GUI.interval_remove('get_in_sync');
             GUI.log('Connection to the module <span style="color: red">failed</span>');
-            
+
             // disconnect
             self.upload_procedure(99);
         }
@@ -144,7 +144,7 @@ STK500v2_protocol.prototype.initialize = function() {
 
 STK500v2_protocol.prototype.read = function(readInfo) {
     var data = new Uint8Array(readInfo.data);
-    
+
     for (var i = 0; i < data.length; i++) {
         // state machine
         switch(this.message_state) {
@@ -166,13 +166,13 @@ STK500v2_protocol.prototype.read = function(readInfo) {
             case 2:
                 this.message_size = data[i] << 8; // MSB
                 this.message_crc ^= data[i];
-                
+
                 this.message_state++;
                 break;
             case 3:
                 this.message_size |= data[i]; // LSB
                 this.message_crc ^= data[i];
-                
+
                 this.message_state++;
                 break;
             case 4:
@@ -180,7 +180,7 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                     this.message_buffer = new ArrayBuffer(this.message_size);
                     this.message_buffer_uint8_view = new Uint8Array(this.message_buffer);
                     this.message_crc ^= data[i];
-                    
+
                     this.message_state++;
                 } else {
                     this.message_crc = 0;
@@ -191,10 +191,10 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                 this.message_buffer_uint8_view[this.message_buffer_i] = data[i];
                 this.message_crc ^= data[i];
                 this.message_buffer_i++;
-                
+
                 if (this.message_buffer_i >= this.message_size) {
                     this.message_state++;
-                }                
+                }
                 break;
             case 6:
                 if (this.message_crc == data[i]) {
@@ -207,12 +207,12 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                                 this.message_callbacks[j].callback(this.message_buffer_uint8_view, this.message_buffer);
                                 callback_fired = true;
                             }
-                            
+
                             // remove callback object
                             this.message_callbacks.splice(j, 1);
                         }
                     }
-                    
+
                     if (!callback_fired) {
                         // unexpected message arrived
                         console.log(this.message_buffer_uint8_view);
@@ -221,7 +221,7 @@ STK500v2_protocol.prototype.read = function(readInfo) {
                     // crc failed
                     console.log('crc failed, sequence: ' + this.sequence_number);
                 }
-                
+
                 this.message_buffer_i = 0;
                 this.message_crc = 0;
                 this.message_state = 0;
@@ -233,42 +233,42 @@ STK500v2_protocol.prototype.read = function(readInfo) {
 STK500v2_protocol.prototype.send = function(Array, callback) {
     var bufferOut = new ArrayBuffer(Array.length + 6); // 6 bytes protocol overhead
     var bufferView = new Uint8Array(bufferOut);
-    
+
     this.sequence_number++;
     if (this.sequence_number >= 256) this.sequence_number = 0; // reset 8 bit
-    
+
     bufferView[0] = this.message.MESSAGE_START;
     bufferView[1] = this.sequence_number;
     bufferView[2] = Array.length >> 8;      // MSB
     bufferView[3] = Array.length & 0x00FF;  // LSB
     bufferView[4] = this.message.TOKEN;
-    
+
     bufferView.set(Array, 5); // apply protocol offset
-    
+
     // calculate CRC
     var crc = 0;
     for (var i = 0; i < (bufferView.length - 1); i++) {
         crc ^= bufferView[i];
     }
     bufferView[bufferView.length - 1] = crc;
-    
+
     // attach callback
     if (callback) this.message_callbacks.push({'command': Array[0], 'callback': callback});
-    
-    serial.send(bufferOut, function(writeInfo) {}); 
+
+    serial.send(bufferOut, function(writeInfo) {});
 };
 
 STK500v2_protocol.prototype.connect = function(baud, hex) {
     var self = this;
     self.hex = hex;
-    
+
     var selected_port = String($('div#controls #port').val());
-    
+
     if (selected_port != '0') {
         serial.connect(selected_port, {bitrate: baud}, function(openInfo) {
             if (openInfo) {
                 GUI.log('Connection <span style="color: green">successfully</span> opened with ID: ' + openInfo.connectionId);
-                
+
                 self.initialize();
             } else {
                 GUI.log('<span style="color: red">Failed</span> to open serial port');
@@ -276,12 +276,12 @@ STK500v2_protocol.prototype.connect = function(baud, hex) {
         });
     } else {
         GUI.log('Please select valid serial port');
-    }    
+    }
 };
 
 STK500v2_protocol.prototype.upload_procedure = function(step) {
     var self = this;
-    
+
     switch (step) {
         case 1:
             // enter programming mode
@@ -289,16 +289,16 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[0] = this.command.CMD_ENTER_PROGMODE_ISP;
             arr[1] = 200; // timeout (Command time-out (in ms)
             arr[2] = 100; // Delay (in ms) used for pin stabilization
-            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution 
-            arr[4] = 32; // Number of synchronization loops 
+            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution
+            arr[4] = 32; // Number of synchronization loops
             arr[5] = 0; // Delay (in ms) between each byte in the EnterProgMode command.
-            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx 
+            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx
             arr[7] = 3; // Start address, received byte: 0 = no polling, 3 = AVR, 4 = AT89xx
             arr[8] = 0xAC; // Command Byte # 1 to be transmitted
             arr[9] = 0x53; // Command Byte # 2 to be transmitted
             arr[10] = 0x00; // Command Byte # 3 to be transmitted
             arr[11] = 0x00; // Command Byte # 4 to be transmitted
-            
+
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Entered programming mode');
@@ -314,10 +314,10 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             var signature = 0;
             var arr = [[], [], []];
             var needle = 0;
-            
+
             // first set
             arr[0][0] = this.command.CMD_SPI_MULTI;
-            arr[0][1] = 0x04; // Number of bytes to transmit 
+            arr[0][1] = 0x04; // Number of bytes to transmit
             arr[0][2] = 0x04; // Number of bytes to receive
             arr[0][3] = 0x00; // Start address of returned data. Specifies on what transmitted byte the response is to be stored and returned.
             // TxData below, The data be transmitted. The size is specified by NumTx
@@ -325,7 +325,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[0][5] = 0x00;
             arr[0][6] = 0x00;
             arr[0][7] = 0x00;
-            
+
             // second set
             arr[1][0] = this.command.CMD_SPI_MULTI;
             arr[1][1] = 0x04;
@@ -336,7 +336,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[1][5] = 0x00;
             arr[1][6] = 0x01;
             arr[1][7] = 0x00;
-            
+
             // third set
             arr[2][0] = this.command.CMD_SPI_MULTI;
             arr[2][1] = 0x04;
@@ -347,11 +347,11 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[2][5] = 0x00;
             arr[2][6] = 0x02;
             arr[2][7] = 0x00;
-            
+
             var send_spi = function() {
                 self.send(arr[needle], function(data) {
                     signature |= data[5] << (8 * (2 - needle));
-                    
+
                     needle++;
                     if (needle < 3) {
                         send_spi();
@@ -367,22 +367,22 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     }
                 });
             };
-            
+
             // start sending
             send_spi();
             break;
         case 3:
             // chip erase
             var arr = [];
-            
+
             arr[0] = self.command.CMD_CHIP_ERASE_ISP;
             arr[1] = 10; // Delay (in ms) to ensure that the erase of the device is finished
-            arr[2] = 0; // Poll method, 0 = use delay 1= use RDY/BSY command 
-            arr[3] = 0xAC; // Command Byte # 1 to be transmitted 
-            arr[4] = 0x98; // Command Byte # 2 to be transmitted 
-            arr[5] = 0x3B; // Command Byte # 3 to be transmitted 
-            arr[6] = 0xE6; // Command Byte # 4 to be transmitted 
-            
+            arr[2] = 0; // Poll method, 0 = use delay 1= use RDY/BSY command
+            arr[3] = 0xAC; // Command Byte # 1 to be transmitted
+            arr[4] = 0x98; // Command Byte # 2 to be transmitted
+            arr[5] = 0x3B; // Command Byte # 3 to be transmitted
+            arr[6] = 0xE6; // Command Byte # 4 to be transmitted
+
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Chip erased');
@@ -399,16 +399,16 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             arr[0] = this.command.CMD_ENTER_PROGMODE_ISP;
             arr[1] = 200; // timeout (Command time-out (in ms)
             arr[2] = 100; // Delay (in ms) used for pin stabilization
-            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution 
-            arr[4] = 32; // Number of synchronization loops 
+            arr[3] = 25; // Delay (in ms) in connection with the EnterProgMode command execution
+            arr[4] = 32; // Number of synchronization loops
             arr[5] = 0; // Delay (in ms) between each byte in the EnterProgMode command.
-            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx 
+            arr[6] = 0x53; // Poll value: 0x53 for AVR, 0x69 for AT89xx
             arr[7] = 3; // Start address, received byte: 0 = no polling, 3 = AVR, 4 = AT89xx
             arr[8] = 0xAC; // Command Byte # 1 to be transmitted
             arr[9] = 0x53; // Command Byte # 2 to be transmitted
             arr[10] = 0x00; // Command Byte # 3 to be transmitted
             arr[11] = 0x00; // Command Byte # 4 to be transmitted
-            
+
             self.send(arr, function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Entered programming mode');
@@ -422,16 +422,16 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
         case 5:
             // flash
             GUI.log('Writing ...');
-            
+
             var blocks = self.hex.data.length - 1;
             var flashing_block = 0;
             var bytes_flashed = 0;
             var flashing_memory_address = self.hex.data[flashing_block].address;
-            
+
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Address loaded: ' + flashing_memory_address);
-                    
+
                     // start writing
                     write();
                 } else {
@@ -439,21 +439,21 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     self.upload_procedure(99);
                 }
             });
-            
+
             var write = function() {
                 if (bytes_flashed >= self.hex.data[flashing_block].bytes) {
                     // move to another block
                     if (flashing_block < blocks) {
                         flashing_block++;
-                        
+
                         flashing_memory_address = self.hex.data[flashing_block].address;
                         bytes_flashed = 0;
-                        
+
                         // change address
                         self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (flashing_memory_address >> 8), (flashing_memory_address & 0x00FF)], function(data) {
                             if (data[1] == self.status.STATUS_CMD_OK) {
                                 console.log('STK500V2 - Address loaded: ' + flashing_memory_address);
-                                
+
                                 // continue writing
                                 write();
                             } else {
@@ -472,25 +472,25 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     } else {
                         bytes_to_write = self.hex.data[flashing_block].bytes - bytes_flashed;
                     }
-                    
+
                     console.log('STK500V2 - Writing to: ' + flashing_memory_address + ', ' + bytes_to_write + ' bytes');
-                
+
                     var arr = [];
                     arr[0] = self.command.CMD_PROGRAM_FLASH_ISP;
-                    arr[1] = 0; // Total number of bytes to program, MSB first 
+                    arr[1] = 0; // Total number of bytes to program, MSB first
                     arr[2] = bytes_to_write; // LSB
                     arr[3] = 0xA1; // Mode byte
                     arr[4] = 10; // delay
                     arr[5] = bytes_to_write; // Command 1 (Load Page, Write Program Memory)
-                    arr[6] = 0x4C; // Command 2 (Write Program Memory Page) 
-                    arr[7] = 0x20; // Command 3 (Read Program Memory) 
-                    arr[8] = 0xFF; // Poll Value #1 
+                    arr[6] = 0x4C; // Command 2 (Write Program Memory Page)
+                    arr[7] = 0x20; // Command 3 (Read Program Memory)
+                    arr[8] = 0xFF; // Poll Value #1
                     arr[9] = 0x00; // Poll Value #2 (not used for flash programming)
-                    
+
                     for (var i = 0; i < bytes_to_write; i++) {
                         arr.push(self.hex.data[flashing_block].data[bytes_flashed++]);
                     }
-                    
+
                     self.send(arr, function(data) {
                         if (data[1] == self.status.STATUS_CMD_OK) {
                             flashing_memory_address += bytes_to_write;
@@ -507,21 +507,21 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
         case 6:
             // read
             GUI.log('Verifying ...');
-            
+
             var blocks = self.hex.data.length - 1;
             var reading_block = 0;
             var bytes_verified = 0;
             var verifying_memory_address = 0;
-            
+
             // initialize arrays
             for (var i = 0; i <= blocks; i++) {
                 self.verify_hex.push([]);
             }
-            
+
             self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
                 if (data[1] == self.status.STATUS_CMD_OK) {
                     console.log('STK500V2 - Address loaded: ' + verifying_memory_address);
-                    
+
                     // start reading
                     reading();
                 } else {
@@ -529,21 +529,21 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     self.upload_procedure(99);
                 }
             });
-            
+
             var reading = function() {
                 if (bytes_verified >= self.hex.data[reading_block].bytes) {
                     // move to another block
                     if (reading_block < blocks) {
                         reading_block++;
-                        
+
                         verifying_memory_address = self.hex.data[reading_block].address;
                         bytes_verified = 0;
-                        
+
                         // change address
                         self.send([self.command.CMD_LOAD_ADDRESS, 0x00, 0x00, (verifying_memory_address >> 8), (verifying_memory_address & 0x00FF)], function(data) {
                             if (data[1] == self.status.STATUS_CMD_OK) {
                                 console.log('STK500V2 - Address loaded: ' + verifying_memory_address);
-                                
+
                                 // continue reading
                                 reading();
                             } else {
@@ -553,14 +553,14 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                         });
                     } else {
                         // all blocks read, verify
-                        
+
                         var verify = true;
                         for (var i = 0; i <= blocks; i++) {
                             verify = self.verify_flash(self.hex.data[i].data, self.verify_hex[i]);
-                            
+
                             if (!verify) break;
                         }
-                        
+
                         if (verify) {
                             GUI.log('Verifying <span style="color: green">done</span>');
                             GUI.log('Programming: <span style="color: green;">SUCCESSFUL</span>');
@@ -568,7 +568,7 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                             GUI.log('Verifying <span style="color: red">failed</span>');
                             GUI.log('Programming: <span style="color: red;">FAILED</span>');
                         }
-                        
+
                         self.upload_procedure(7);
                     }
                 } else {
@@ -578,24 +578,24 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
                     } else {
                         bytes_to_read = self.hex.data[reading_block].bytes - bytes_verified;
                     }
-                    
+
                     console.log('STK500V2 - Reading from: ' + verifying_memory_address + ', ' + bytes_to_read + ' bytes');
-                    
+
                     var arr = [];
                     arr[0] = self.command.CMD_READ_FLASH_ISP;
                     arr[1] = 0; // Total number of bytes to read, MSB first
                     arr[2] = bytes_to_read; // LSB
                     arr[3] = 32; // Read Program Memory command byte #1. Low/High byte selection bit (3rd bit) is handled in the FIRMWARE
-                    
+
                     self.send(arr, function(data) {
                         if (data[1] == self.status.STATUS_CMD_OK) {
                             for (var i = 2; i < (data.length - 1); i++) { // - status2 byte
                                 self.verify_hex[reading_block].push(data[i]);
                                 bytes_verified++;
                             }
-                            
+
                             verifying_memory_address += bytes_to_read;
-                            
+
                             // verify another page
                             reading();
                         } else {
@@ -607,12 +607,12 @@ STK500v2_protocol.prototype.upload_procedure = function(step) {
             };
             break;
         case 7:
-            // leave programming mode            
+            // leave programming mode
             var arr = [];
             arr[0] = self.command.CMD_LEAVE_PROGMODE_ISP;
             arr[1] = 1; // Pre-delay (in ms)
             arr[2] = 1; // Post-delay (in ms)
-            
+
             self.send(arr, function(data) {
                 console.log('STK500V2 - Left Programming Mode');
                 self.upload_procedure(99);
@@ -640,9 +640,9 @@ STK500v2_protocol.prototype.verify_flash = function(first_array, second_array) {
             return false;
         }
     }
-    
+
     console.log('Verification successful, matching: ' + first_array.length + ' bytes');
-    
+
     return true;
 };
 

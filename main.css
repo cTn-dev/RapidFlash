@@ -10,7 +10,7 @@ body {
     font-size: 12px;
     color: #303030;
     -webkit-text-size-adjust: 100%;
-    
+
     background-color: #dfddd0;
 }
 a {
@@ -31,20 +31,20 @@ a:hover {
 }
 #main-wrapper {
     width: 580px;
-    
+
     padding: 10px;
 }
 #controls {
     height: 22px;
-    
+
     margin-bottom: 10px;
 }
     #controls select {
         height: 20px;
         line-height: 20px;
-        
+
         margin-right: 10px;
-        
+
         border: 1px solid silver;
     }
     #controls #port {
@@ -56,31 +56,31 @@ a:hover {
     #controls #firmware {
         width: 120px;
     }
-#log {    
+#log {
     margin-bottom: 10px;
-    
+
     height: 90px;
-    
+
     border: 1px solid silver;
     background-color: white;
-    
+
     overflow-y: scroll;
-} 
+}
     #log .wrapper {
         padding: 5px;
-        
+
         -webkit-user-select: text;
     }
 #content {
     height: 180px;
-    
+
     padding: 10px;
-    
+
     border: 1px solid silver;
     background-color: white;
-    
+
     overflow-y: auto;
-    overflow-x: hidden;    
+    overflow-x: hidden;
 }
 #options {
     height: 150px;
@@ -88,20 +88,20 @@ a:hover {
     #options .title {
         margin-bottom: 10px;
         padding-bottom: 5px;
-        
+
         font-weight: bold;
         text-align: center;
-        
+
         border-bottom: 1px dashed silver;
     }
     #options dl {
     }
     #options dt {
         float: left;
-        
+
         width: 20px;
         height: 22px;
-        
+
         line-height: 20px;
     }
         #options dt input[type="checkbox"] {
@@ -110,10 +110,10 @@ a:hover {
     #options dd {
         height: 22px;
         line-height: 22px;
-        
+
         margin-left: 20px;
     }
-.buttons {    
+.buttons {
     height: 28px;
 }
     .buttons .load {
@@ -121,7 +121,7 @@ a:hover {
     }
     .buttons .save {
         float: left;
-        
+
         margin-left: 10px;
     }
     .buttons .flash {
@@ -129,15 +129,15 @@ a:hover {
     }
     .buttons a {
         display: block;
-        
+
         height: 26px;
         line-height: 26px;
-        
+
         padding: 0 10px 0 10px;
-        
+
         text-align: center;
         font-weight: bold;
-      
+
         border: 1px solid silver;
         background-color: #ececec;
     }
