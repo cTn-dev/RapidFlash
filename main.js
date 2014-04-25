@@ -7,6 +7,21 @@ chrome.runtime.getBackgroundPage(function(result) {
     backgroundPage.app_window = window;
 });
 
+// Google Analytics BEGIN
+var ga_config; // google analytics config reference
+var ga_tracking; // global result of isTrackingPermitted
+
+var service = analytics.getService('ice_cream_app');
+service.getConfig().addCallback(function(config) {
+    ga_config = config;
+    ga_tracking = config.isTrackingPermitted();
+});
+
+var ga_tracker = service.getTracker('UA-32728876-8');
+
+ga_tracker.sendAppView('Application Started');
+// Google Analytics END
+
 $(document).ready(function() {
     PortHandler.initialize();
 
