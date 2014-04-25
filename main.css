@@ -30,14 +30,12 @@ a:hover {
     float: right;
 }
 #main-wrapper {
-    width: 580px;
-
-    padding: 10px;
+    padding: 5px;
 }
 #controls {
     height: 22px;
 
-    margin-bottom: 10px;
+    margin-bottom: 3px;
 }
     #controls select {
         height: 20px;
@@ -48,7 +46,7 @@ a:hover {
         border: 1px solid silver;
     }
     #controls #port {
-        width: 120px;
+        width: 140px;
     }
     #controls #programmer {
         /* using auto-width for now */
@@ -57,9 +55,9 @@ a:hover {
         width: 120px;
     }
 #log {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 
-    height: 90px;
+    height: 60px;
 
     border: 1px solid silver;
     background-color: white;
@@ -143,4 +141,34 @@ a:hover {
     }
     .buttons a:hover {
         background-color: #dedcdc;
+    }
+.donate {
+    height: 80px;
+
+    padding: 0 0 5px 0;
+    margin: 5px 0 0 0;
+
+    border: 1px solid silver;
+    background-color: white;
+}
+    .donate .title {
+        line-height: 20px;
+
+        text-align: center;
+        font-weight: bold;
+        color: white;
+
+        border-bottom: 1px solid silver;
+        background-color: #3f4241;
+    }
+    .donate p {
+        padding: 5px;
+    }
+    .donate a {
+        display: block;
+
+        width: 74px;
+        height: 21px;
+
+        margin: auto;
     }
