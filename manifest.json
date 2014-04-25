@@ -22,5 +22,9 @@
         "fileSystem",
         "fileSystem.write",
         "notifications"
-    ]
+    ],
+
+    "icons": {
+        "128": "images/icon_128.png"
+    }
 }
