@@ -8,6 +8,8 @@
     "short_name": "RapidFlash",
     "description": "Taking ESC flashing to the next level",
 
+    "default_locale": "en",
+
     "app": {
         "background": {
             "scripts": [ "background.js" ]
