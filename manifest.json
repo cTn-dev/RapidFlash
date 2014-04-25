@@ -4,9 +4,9 @@
     "version": "0.1",
 
     "author": "cTn",
-    "name": "Flasher",
-    "short_name": "Flasher",
-    "description": "Just a Flasher",
+    "name": "RapidFlash",
+    "short_name": "RapidFlash",
+    "description": "Taking ESC flashing to the next level",
 
     "app": {
         "background": {
@@ -16,6 +16,7 @@
 
     "permissions": [
         "https://www.google-analytics.com/",
+        "https://*.github.com/",
         "serial",
         "storage",
         "fileSystem",
