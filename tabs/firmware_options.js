@@ -66,7 +66,7 @@ function initialize_firmware_options() {
                                         ihex.parsed = event.data;
 
                                         GUI.log('Custom HEX file <span style="color: green">loaded</span>');
-                                        $('select#firmware').val('custom');
+                                        $('select#firmware').val('custom').change();
                                     } else {
                                         GUI.log('HEX file appears to be <span style="color: red">corrupted</span>');
                                     }
@@ -184,6 +184,7 @@ function initialize_firmware_options() {
                                 worker.postMessage(result);
                             });
                         } else {
+                            // custom firmware
                             begin_upload(ihex.parsed);
                         }
                     } else {
