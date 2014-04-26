@@ -33,6 +33,8 @@ a:hover {
     padding: 5px;
 }
 #controls {
+    float: left;
+
     height: 22px;
 
     margin-bottom: 3px;
@@ -49,10 +51,54 @@ a:hover {
         width: 140px;
     }
     #controls #programmer {
-        /* using auto-width for now */
+        width: 150px;
     }
     #controls #firmware {
         width: 120px;
+    }
+#app_options {
+    float: right;
+
+    margin-top: 1px;
+
+    width: 20px;
+    height: 20px;
+
+    opacity: 0.6;
+}
+    #app_options:before {
+        font-family: icons;
+        content: '\e600';
+        font-size: 18px;
+    }
+    #app_options:hover {
+        opacity: 0.70;
+    }
+    #app_options.active {
+        opacity: 0.70;
+    }
+    #app_options.active:hover {
+        opacity: 0.85;
+    }
+#app_options-window {
+    display: none;
+    position: fixed;
+
+    right: 5px;
+    top: 30px;
+
+    padding: 5px;
+
+    line-height: 20px;
+
+    border: 1px solid silver;
+    background-color: white;
+}
+    #app_options-window input {
+        float: left;
+
+        margin-top: 3px;
+        margin-right: 5px;
     }
 #log {
     margin-bottom: 5px;
@@ -80,70 +126,8 @@ a:hover {
     overflow-y: auto;
     overflow-x: hidden;
 }
-#options {
-    height: 150px;
-}
-    #options .title {
-        margin-bottom: 10px;
-        padding-bottom: 5px;
-
-        font-weight: bold;
-        text-align: center;
-
-        border-bottom: 1px dashed silver;
-    }
-    #options dl {
-    }
-    #options dt {
-        float: left;
-
-        width: 20px;
-        height: 22px;
-
-        line-height: 20px;
-    }
-        #options dt input[type="checkbox"] {
-            vertical-align: middle;
-        }
-    #options dd {
-        height: 22px;
-        line-height: 22px;
-
-        margin-left: 20px;
-    }
-.buttons {
-    height: 28px;
-}
-    .buttons .load {
-        float: left;
-    }
-    .buttons .save {
-        float: left;
-
-        margin-left: 10px;
-    }
-    .buttons .flash {
-        float: right;
-    }
-    .buttons a {
-        display: block;
-
-        height: 26px;
-        line-height: 26px;
-
-        padding: 0 10px 0 10px;
-
-        text-align: center;
-        font-weight: bold;
-
-        border: 1px solid silver;
-        background-color: #ececec;
-    }
-    .buttons a:hover {
-        background-color: #dedcdc;
-    }
 .donate {
-    height: 80px;
+    height: 84px;
 
     padding: 0 0 5px 0;
     margin: 5px 0 0 0;
@@ -172,3 +156,8 @@ a:hover {
 
         margin: auto;
     }
+
+@font-face {
+    font-family: 'icons';
+    src: url('./images/icons/icomoon.woff');
+}
