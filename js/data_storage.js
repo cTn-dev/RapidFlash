@@ -25,7 +25,8 @@ var firmware_type = [
     'tp',
     'tp_i2c',
     'tp_nfet',
-    'tp70a'
+    'tp70a',
+    'custom'
 ];
 
 var ihex = {

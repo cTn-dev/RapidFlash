@@ -15,7 +15,7 @@ function initialize_firmware_options() {
         $('select#firmware').change(function() {
             var val = $(this).val();
 
-            if (val != '0') {
+            if (val != '0' && val != 'custom') {
                 $('.tab-firmware_options input:disabled').each(function() {
                     $(this).prop('disabled', false);
                 });
@@ -64,6 +64,9 @@ function initialize_firmware_options() {
                                 worker.onmessage = function (event) {
                                     if (event.data) {
                                         ihex.parsed = event.data;
+
+                                        GUI.log('Custom HEX file <span style="color: green">loaded</span>');
+                                        $('select#firmware').val('custom');
                                     } else {
                                         GUI.log('HEX file appears to be <span style="color: red">corrupted</span>');
                                     }
@@ -145,40 +148,44 @@ function initialize_firmware_options() {
             if (!GUI.connect_lock) {
                 if ($('select#programmer').val() != '0') {
                     if ($('select#firmware').val() != '0') {
-                        // process options here (temporary solution while compile server is offline)
-                        //damn this is nasty :-( (but will do for now)
-                        var comp = 0
-                        if ($('#options input[name="comp_pwm"]').is(':checked')) comp = 1;
+                        if ($('select#firmware').val() != 'custom') {
+                            // process options here (temporary solution while compile server is offline)
+                            // damn this is nasty :-( (but will do for now)
+                            var comp = 0
+                            if ($('#options input[name="comp_pwm"]').is(':checked')) comp = 1;
 
-                        var reverse = 0;
-                        if ($('#options input[name="motor_reverse"]').is(':checked')) reverse = 1;
+                            var reverse = 0;
+                            if ($('#options input[name="motor_reverse"]').is(':checked')) reverse = 1;
 
-                        var dir = '';
-                        if (!comp && !reverse) dir = 'normal_forward';
-                        else if (comp && !reverse) dir = 'comppwm_forward';
-                        else if (!comp && reverse) dir = 'normal_reverse';
-                        else if (comp && reverse) dir = 'comppwm_reverse';
+                            var dir = '';
+                            if (!comp && !reverse) dir = 'normal_forward';
+                            else if (comp && !reverse) dir = 'comppwm_forward';
+                            else if (!comp && reverse) dir = 'normal_reverse';
+                            else if (comp && reverse) dir = 'comppwm_reverse';
 
 
-                        // load the firmware
-                        var firmware_name = $('select#firmware').val() + '_' + dir;
-                        console.log('./firmware/' + dir + '/' + firmware_name + '.hex');
-                        $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
-                            ihex.raw = result;
+                            // load the firmware
+                            var firmware_name = $('select#firmware').val() + '_' + dir;
+                            console.log('./firmware/' + dir + '/' + firmware_name + '.hex');
+                            $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
+                                ihex.raw = result;
 
-                            // parsing hex in different thread
-                            var worker = new Worker('./js/workers/hex_parser.js');
+                                // parsing hex in different thread
+                                var worker = new Worker('./js/workers/hex_parser.js');
 
-                            // "callback"
-                            worker.onmessage = function (event) {
-                                ihex.parsed = event.data;
+                                // "callback"
+                                worker.onmessage = function (event) {
+                                    ihex.parsed = event.data;
 
-                                begin_upload(ihex.parsed);
-                            };
+                                    begin_upload(ihex.parsed);
+                                };
 
-                            // send data/string over for processing
-                            worker.postMessage(result);
-                        });
+                                // send data/string over for processing
+                                worker.postMessage(result);
+                            });
+                        } else {
+                            begin_upload(ihex.parsed);
+                        }
                     } else {
                         GUI.log('Please select firmware from the menu');
                     }
