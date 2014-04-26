@@ -173,7 +173,7 @@ function initialize_firmware_options() {
                             worker.onmessage = function (event) {
                                 ihex.parsed = event.data;
 
-                                beging_upload(ihex.parsed);
+                                begin_upload(ihex.parsed);
                             };
 
                             // send data/string over for processing
