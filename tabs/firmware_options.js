@@ -149,40 +149,23 @@ function initialize_firmware_options() {
                 if ($('select#programmer').val() != '0') {
                     if ($('select#firmware').val() != '0') {
                         if ($('select#firmware').val() != 'custom') {
-                            // process options here (temporary solution while compile server is offline)
-                            // damn this is nasty :-( (but will do for now)
-                            var comp = 0
-                            if ($('#options input[name="comp_pwm"]').is(':checked')) comp = 1;
+                            // TODO load the firmware
+                            /*
+                            ihex.raw = result;
 
-                            var reverse = 0;
-                            if ($('#options input[name="motor_reverse"]').is(':checked')) reverse = 1;
+                            // parsing hex in different thread
+                            var worker = new Worker('./js/workers/hex_parser.js');
 
-                            var dir = '';
-                            if (!comp && !reverse) dir = 'normal_forward';
-                            else if (comp && !reverse) dir = 'comppwm_forward';
-                            else if (!comp && reverse) dir = 'normal_reverse';
-                            else if (comp && reverse) dir = 'comppwm_reverse';
+                            // "callback"
+                            worker.onmessage = function (event) {
+                                ihex.parsed = event.data;
 
+                                begin_upload(ihex.parsed);
+                            };
 
-                            // load the firmware
-                            var firmware_name = $('select#firmware').val() + '_' + dir;
-                            console.log('./firmware/' + dir + '/' + firmware_name + '.hex');
-                            $.get('./firmware/' + dir + '/' + firmware_name + '.hex', function(result) {
-                                ihex.raw = result;
-
-                                // parsing hex in different thread
-                                var worker = new Worker('./js/workers/hex_parser.js');
-
-                                // "callback"
-                                worker.onmessage = function (event) {
-                                    ihex.parsed = event.data;
-
-                                    begin_upload(ihex.parsed);
-                                };
-
-                                // send data/string over for processing
-                                worker.postMessage(result);
-                            });
+                            // send data/string over for processing
+                            worker.postMessage(result);
+                            */
                         } else {
                             // custom firmware
                             begin_upload(ihex.parsed);
