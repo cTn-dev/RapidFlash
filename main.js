@@ -276,7 +276,7 @@ $(document).ready(function() {
                             // Request firmware
                             GUI.log('<strong>Requesting</strong> firmware');
 
-                            var host = 'http://kari.hautio.net/cgi-bin/tgy/gethex.cgi?';
+                            var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?';
                             var firmware = $('select#firmware').val();
 
                             var params = {};

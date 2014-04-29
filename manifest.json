@@ -19,7 +19,7 @@
     "permissions": [
         "https://www.google-analytics.com/",
         "https://*.github.com/",
-        "http://*.hautio.net/",
+        "http://www.openlrsng.org/",
         "serial",
         "storage",
         "fileSystem",

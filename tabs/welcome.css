@@ -2,12 +2,18 @@
     float: left;
 
     width: 310px;
-    height: 111px;
+    height: 131px;
 
     padding: 5px;
 
     border: 1px solid silver;
 }
+    .tab-welcome .text a {
+        font-weight: bold;
+    }
+    .tab-welcome .text a:hover {
+        text-decoration: underline;
+    }
 .tab-welcome .changelog {
     float: right;
 
@@ -28,7 +34,7 @@
         background-color: #3f4241;
     }
     .tab-welcome .changelog .wrapper {
-        height: 90px;
+        height: 110px;
 
         padding: 5px;
 
