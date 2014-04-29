@@ -112,6 +112,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'number',
         name:           'MOTOR_ADVANCE',
         description:    'Degrees of timing advance (0 - 30, 30 meaning no delay)',
         default:        18,
@@ -130,7 +131,7 @@ var firmware_options = [
         visible:        true,
         element:        'checkbox',
         name:           'MOTOR_BRAKE',
-        description:    'Enable brake during neutral/idle ("motor drag" brake)',
+        description:    'Enable brake during neutral/idle (motor drag brake)',
         default:        0,
         min:            0,
         max:            1
@@ -138,7 +139,7 @@ var firmware_options = [
     {
         visible:        true,
         name:           'LOW_BRAKE',
-        description:    'Enable brake on very short RC pulse ("thumb" brake like on Airtronics XL2P)',
+        description:    'Enable brake on very short RC pulse (thumb brake like on Airtronics XL2P)',
         default:        0,
         min:            0,
         max:            1
@@ -154,6 +155,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'RC_PULS_REVERSE',
         description:    'Enable RC-car style forward/reverse throttle',
         default:        0,
@@ -179,6 +181,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'BEACON',
         description:    'Beep periodically when RC signal is lost',
         default:        1,

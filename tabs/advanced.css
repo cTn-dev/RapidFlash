@@ -1,0 +1,37 @@
+.tab-advanced dl {
+}
+.tab-advanced dt {
+    float: left;
+
+    width: 20px;
+    height: 22px;
+
+    line-height: 20px;
+}
+    .tab-advanced dt.number {
+        width: 60px;
+    }
+    .tab-advanced dt input[type="checkbox"] {
+        vertical-align: middle;
+    }
+    .tab-advanced dt input[type="number"] {
+        display: block;
+
+        width: 45px;
+        height: 18px;
+        padding-left: 5px;
+
+        border: 1px solid silver;
+    }
+.tab-advanced dd {
+    height: 22px;
+
+    margin-left: 20px;
+
+    line-height: 22px;
+    font-weight: bold;
+}
+    .tab-advanced dd.number {
+        margin-left: 60px;
+        line-height: 20px;
+    }

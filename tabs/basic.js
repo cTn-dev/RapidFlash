@@ -24,16 +24,16 @@ function tab_initialize_basic() {
         }
 
         for (var i = 0; i < properties.length; i++) {
-            if (properties[i][1] > 1 || properties[i][1] < 0) {
-                $('input[name="' + properties[i][0] + '"]').val(properties[i][1]);
-            } else {
+            if (properties[i][2] == 'checkbox') {
                 $('input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
+            } else {
+                $('input[name="' + properties[i][0] + '"]').val(properties[i][1]);
             }
         }
     }
 
     $('#content').load("./tabs/basic.html", function() {
-        generate_ui(['MOTOR_REVERSE', 'COMP_PWM', 'RC_CALIBRATION', 'MOTOR_BRAKE']);
+        generate_ui(['MOTOR_REVERSE', 'RC_CALIBRATION', 'BEACON', 'MOTOR_BRAKE']);
 
         $('select#firmware').change(function() {
             var val = $(this).val();
@@ -52,8 +52,14 @@ function tab_initialize_basic() {
         // bind events
         $('.tab-basic dl:first input').change(function() {
             var element = $(this);
+            var type = element.prop('type');
             var name = element.prop('name');
-            var val = + element.is(':checked'); // + converts boolean to decimal
+
+            if (type == 'checkbox') {
+                var val = + element.is(':checked'); // + converts boolean to decimal
+            } else {
+                var val = element.val();
+            }
 
             for (var i = 0; i < properties.length; i++) {
                 if (properties[i][0] == name) {
@@ -63,7 +69,7 @@ function tab_initialize_basic() {
                 }
             }
 
-            properties.push([name, val]);
+            properties.push([name, val, type]);
         });
     });
 }
