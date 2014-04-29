@@ -153,7 +153,7 @@ a:hover {
 #content {
     margin-top: 32px;
 
-    height: 180px;
+    height: 210px;
 
     padding: 10px;
 
@@ -163,35 +163,41 @@ a:hover {
     overflow-y: auto;
     overflow-x: hidden;
 }
-.donate {
-    height: 84px;
+.buttons {
+    height: 28px;
 
-    padding: 0 0 5px 0;
-    margin: 5px 0 0 0;
+    padding: 5px 5px 5px 5px;
 
-    border: 1px solid silver;
-    background-color: white;
+    border: 1px solid #848484;
+    border-top: 0;
+    background-color: #f0f0f0;
 }
-    .donate .title {
-        line-height: 20px;
+    .buttons .load {
+        float: left;
+    }
+    .buttons .save {
+        display: none; /* temporary disabled */
+        float: left;
+    }
+    .buttons .flash {
+        float: right;
+    }
+    .buttons a {
+        display: block;
+
+        height: 26px;
+        line-height: 26px;
+
+        padding: 0 10px 0 10px;
 
         text-align: center;
         font-weight: bold;
-        color: white;
 
-        border-bottom: 1px solid silver;
-        background-color: #3f4241;
+        border: 1px solid silver;
+        background-color: #ececec;
     }
-    .donate p {
-        padding: 5px;
-    }
-    .donate a {
-        display: block;
-
-        width: 74px;
-        height: 21px;
-
-        margin: auto;
+    .buttons a:hover {
+        background-color: #dedcdc;
     }
 
 @font-face {

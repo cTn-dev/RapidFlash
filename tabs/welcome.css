@@ -1,0 +1,30 @@
+.tab-welcome .donate {
+    height: 84px;
+
+    padding: 0 0 5px 0;
+    margin: 5px 0 0 0;
+
+    border: 1px solid silver;
+    background-color: white;
+}
+    .tab-welcome .donate .title {
+        line-height: 20px;
+
+        text-align: center;
+        font-weight: bold;
+        color: white;
+
+        border-bottom: 1px solid silver;
+        background-color: #3f4241;
+    }
+    .tab-welcome .donate p {
+        padding: 5px;
+    }
+    .tab-welcome .donate a {
+        display: block;
+
+        width: 74px;
+        height: 21px;
+
+        margin: auto;
+    }
