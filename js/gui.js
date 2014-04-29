@@ -8,6 +8,7 @@ function GUI_control() {
     this.connecting_to = false;
     this.connected_to = false;
     this.connect_lock = false;
+    this.active_tab;
     this.operating_system;
     this.interval_array = [];
     this.timeout_array = [];

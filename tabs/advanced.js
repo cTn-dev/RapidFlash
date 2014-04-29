@@ -47,6 +47,8 @@ function tab_initialize_advanced() {
     }
 
     $('#content').load("./tabs/advanced.html", function() {
+        GUI.active_tab = 'advanced';
+
         generate_ui(['MOTOR_REVERSE', 'COMP_PWM', 'RC_CALIBRATION', 'BEACON', 'MOTOR_BRAKE', 'RC_PULS_REVERSE', 'MOTOR_ADVANCE']);
 
         $('select#firmware').change(function() {
