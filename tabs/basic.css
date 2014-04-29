@@ -1,0 +1,19 @@
+.tab-basic dl {
+}
+.tab-basic dt {
+    float: left;
+
+    width: 20px;
+    height: 22px;
+
+    line-height: 20px;
+}
+    .tab-basic dt input[type="checkbox"] {
+        vertical-align: middle;
+    }
+.tab-basic dd {
+    height: 22px;
+    line-height: 22px;
+
+    margin-left: 20px;
+}

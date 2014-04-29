@@ -3,6 +3,9 @@ var ihex = {
     parsed: undefined,
 };
 
+var properties = [];
+var request_url = undefined;
+
 var firmware_type = [
     'afro',
     'afro_hv',
@@ -69,6 +72,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'COMP_PWM',
         description:    'During PWM off, switch high side on (unsafe on some boards!)',
         default:        0,
@@ -141,6 +145,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'MOTOR_REVERSE',
         description:    'Reverse normal commutation direction',
         default:        0,
@@ -157,6 +162,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'RC_CALIBRATION',
         description:    'Support run-time calibration of min/max pulse lengths',
         default:        1,
