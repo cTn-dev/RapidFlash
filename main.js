@@ -22,18 +22,6 @@ var ga_tracker = service.getTracker('UA-32728876-8');
 ga_tracker.sendAppView('Application Started');
 // Google Analytics END
 
-function generate_url() {
-    var host = 'http://kari.hautio.net/cgi-bin/tgy/gethex.cgi?';
-    var firmware = $('select#firmware').val();
-
-    var params = {};
-    for (var i = 0; i < properties.length; i++) {
-        params[properties[i][0]] = properties[i][1];
-    }
-
-    request_url = host + 'BOARD=' + firmware + '.hex' + '&' + $.param(params);
-}
-
 $(document).ready(function() {
     PortHandler.initialize();
 
@@ -272,23 +260,39 @@ $(document).ready(function() {
                 if ($('select#firmware').val() != '0') {
                     if ($('select#port').val() != '0') {
                         if ($('select#firmware').val() != 'custom') {
-                            // TODO load the firmware
-                            /*
-                            ihex.raw = result;
+                            GUI.log('Requesting firmware');
 
-                            // parsing hex in different thread
-                            var worker = new Worker('./js/workers/hex_parser.js');
+                            var host = 'http://kari.hautio.net/cgi-bin/tgy/gethex.cgi?';
+                            var firmware = $('select#firmware').val();
 
-                            // "callback"
-                            worker.onmessage = function (event) {
-                                ihex.parsed = event.data;
+                            var params = {};
+                            for (var i = 0; i < properties.length; i++) {
+                                params[properties[i][0]] = properties[i][1];
+                            }
+                            var url = host + 'BOARD=' + firmware + '.hex' + '&' + $.param(params);
 
-                                begin_upload(ihex.parsed);
-                            };
+                            console.log('Requesting - ' + url);
 
-                            // send data/string over for processing
-                            worker.postMessage(result);
-                            */
+                            $.get(url, function(data) {
+                                GUI.log('Firmware <span style="color: green">received</span>');
+
+                                ihex.raw = data;
+
+                                // parsing hex in different thread
+                                var worker = new Worker('./js/workers/hex_parser.js');
+
+                                // "callback"
+                                worker.onmessage = function (event) {
+                                    ihex.parsed = event.data;
+
+                                    begin_upload(ihex.parsed);
+                                };
+
+                                // send data/string over for processing
+                                worker.postMessage(data);
+                            }).fail(function() {
+                                GUI.log('<span style="color: red">Failed</span> to contact compile server');
+                            });
                         } else {
                             // custom firmware
                             begin_upload(ihex.parsed);

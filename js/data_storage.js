@@ -4,7 +4,6 @@ var ihex = {
 };
 
 var properties = [];
-var request_url = undefined;
 
 var firmware_type = [
     'afro',
@@ -129,6 +128,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'MOTOR_BRAKE',
         description:    'Enable brake during neutral/idle ("motor drag" brake)',
         default:        0,
