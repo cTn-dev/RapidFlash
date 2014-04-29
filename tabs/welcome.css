@@ -1,3 +1,48 @@
+.tab-welcome .text {
+    float: left;
+
+    width: 310px;
+    height: 111px;
+
+    padding: 5px;
+
+    border: 1px solid silver;
+}
+.tab-welcome .changelog {
+    float: right;
+
+    margin-bottom: 5px;
+
+    width: 250px;
+
+    border: 1px solid silver;
+}
+    .tab-welcome .changelog .title {
+        line-height: 20px;
+
+        text-align: center;
+        font-weight: bold;
+        color: white;
+
+        border-bottom: 1px solid silver;
+        background-color: #3f4241;
+    }
+    .tab-welcome .changelog .wrapper {
+        height: 90px;
+
+        padding: 5px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+        -webkit-user-select: text;
+    }
+        .tab-welcome .changelog .wrapper span {
+            font-weight: bold;
+        }
+        .tab-welcome .changelog .wrapper p {
+            margin-bottom: 5px;
+        }
 .tab-welcome .donate {
     height: 84px;
 
