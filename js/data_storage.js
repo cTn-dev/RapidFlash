@@ -173,6 +173,7 @@ var firmware_options = [
     },
     {
         visible:        true,
+        element:        'checkbox',
         name:           'SLOW_THROTTLE',
         description:    'Limit maximum throttle jump to try to prevent overcurrent',
         default:        0,
