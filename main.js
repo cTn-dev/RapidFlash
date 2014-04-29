@@ -89,5 +89,38 @@ $(document).ready(function() {
         }
     });
 
-    initialize_firmware_options();
+    // Tabs
+    var tabs = $('#tabs > ul');
+    $('a', tabs).click(function() {
+        if ($(this).parent().hasClass('active') == false) { // only initialize when the tab isn't already active
+            var self = this;
+            var index = $(self).parent().index();
+
+            // disable previously active tab highlight
+            $('li', tabs).removeClass('active');
+
+            // get tab class name (there should be only one class listed)
+            var tab = $(self).parent().prop('class');
+
+            // Highlight selected tab
+            $(self).parent().addClass('active');
+
+            // detach listeners and remove element data
+            $('#content').empty();
+
+            switch (tab) {
+                case 'tab_welcome':
+                    tab_initialize_welcome();
+                    break;
+                case 'tab_basic':
+                    tab_initialize_basic();
+                    break;
+                case 'tab_advanced':
+                    tab_initialize_advanced();
+                    break;
+            }
+        }
+    });
+
+    $('#tabs a:first').click();
 });

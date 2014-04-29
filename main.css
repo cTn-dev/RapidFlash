@@ -43,8 +43,6 @@ a:hover {
         height: 20px;
         line-height: 20px;
 
-        margin-right: 10px;
-
         border: 1px solid silver;
     }
     #controls #port {
@@ -115,12 +113,51 @@ a:hover {
 
         -webkit-user-select: text;
     }
+#tabs {
+    position: absolute;
+    margin-top: 1px;
+}
+    #tabs li {
+        float: left;
+        margin-right: 5px;
+
+        border: 1px solid #848484;
+        border-bottom: 0;
+    }
+        #tabs li.active {
+        }
+            #tabs li.active a {
+                height: 16px;
+
+                background-color: white;
+            }
+            #tabs li.active a:hover {
+                background-color: white;
+                cursor: default;
+            }
+        #tabs li a {
+            display: block;
+
+            height: 15px;
+
+            padding: 5px 12px 5px 12px;
+
+            font-weight: bold;
+            color: #303030;
+
+            background-color: #d0d0d0;
+        }
+        #tabs li a:hover {
+            background-color: #acacac;
+        }
 #content {
+    margin-top: 32px;
+
     height: 180px;
 
     padding: 10px;
 
-    border: 1px solid silver;
+    border: 1px solid #848484;
     background-color: white;
 
     overflow-y: auto;
