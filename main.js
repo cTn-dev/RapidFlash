@@ -31,13 +31,21 @@ $(document).ready(function() {
         'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');
 
     // alpha notice
-    GUI.log('<span style="color: red">This application is currently in <strong>alpha stage</strong></span>');
+    GUI.log('<span style="color: red">This application is currently in <strong>beta stage</strong></span>');
 
     // generate list of firmwares
     var e_firmware = $('select#firmware');
     for (var i = 0; i < firmware_type.length; i++) {
         e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
     }
+
+    chrome.storage.local.get('programmer', function(result) {
+        if (result.programmer) $('select#programmer').val(result.programmer);
+    });
+
+    chrome.storage.local.get('firmware', function(result) {
+        if (result.firmware) $('select#firmware').val(result.firmware);
+    });
 
     // UI hooks
     // app options
@@ -260,7 +268,13 @@ $(document).ready(function() {
                 if ($('select#firmware').val() != '0') {
                     if ($('select#port').val() != '0') {
                         if ($('select#firmware').val() != 'custom') {
-                            GUI.log('Requesting firmware');
+                            // save some of the settings for next use
+                            chrome.storage.local.set({'last_used_port': $('select#port').val()});
+                            chrome.storage.local.set({'programmer': $('select#programmer').val()});
+                            chrome.storage.local.set({'firmware': $('select#firmware').val()});
+
+                            // Request firmware
+                            GUI.log('<strong>Requesting</strong> firmware');
 
                             var host = 'http://kari.hautio.net/cgi-bin/tgy/gethex.cgi?';
                             var firmware = $('select#firmware').val();
@@ -294,8 +308,17 @@ $(document).ready(function() {
                                 GUI.log('<span style="color: red">Failed</span> to contact compile server');
                             });
                         } else {
-                            // custom firmware
-                            begin_upload(ihex.parsed);
+                            if (ihex.parsed) {
+                                // save some of the settings for next use
+                                chrome.storage.local.set({'last_used_port': $('select#port').val()});
+                                chrome.storage.local.set({'programmer': $('select#programmer').val()});
+                                chrome.storage.local.set({'firmware': 0});
+
+                                // custom firmware
+                                begin_upload(ihex.parsed);
+                            } else {
+                                GUI.log('Please load valid firmware first');
+                            }
                         }
                     } else {
                         GUI.log('Please select port');
