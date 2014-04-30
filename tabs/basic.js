@@ -35,7 +35,12 @@ function tab_initialize_basic() {
     $('#content').load("./tabs/basic.html", function() {
         GUI.active_tab = 'basic';
 
-        generate_ui(['MOTOR_REVERSE', 'RC_CALIBRATION', 'BEACON', 'MOTOR_BRAKE']);
+        generate_ui([
+            'MOTOR_REVERSE',
+            'RC_CALIBRATION',
+            'BEACON',
+            'MOTOR_BRAKE'
+        ]);
 
         $('select#firmware').change(function() {
             var val = $(this).val();

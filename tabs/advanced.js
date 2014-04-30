@@ -49,7 +49,21 @@ function tab_initialize_advanced() {
     $('#content').load("./tabs/advanced.html", function() {
         GUI.active_tab = 'advanced';
 
-        generate_ui(['MOTOR_REVERSE', 'COMP_PWM', 'RC_CALIBRATION', 'BEACON', 'MOTOR_BRAKE', 'RC_PULS_REVERSE', 'SLOW_THROTTLE', 'MOTOR_ADVANCE']);
+        generate_ui([
+            'MOTOR_REVERSE',
+            'COMP_PWM',
+            'RC_CALIBRATION',
+            'BEACON', 'MOTOR_BRAKE',
+            'RC_PULS_REVERSE',
+            'SLOW_THROTTLE',
+            'LOW_BRAKE',
+            'CHECK_HARDWARE',
+            'BLIP_CELL_COUNT',
+            'DEBUG_ADC_DUMP',
+            'MOTOR_DEBUG',
+            'MOTOR_ADVANCE',
+            'BRAKE_SPEED'
+        ]);
 
         $('select#firmware').change(function() {
             var val = $(this).val();
