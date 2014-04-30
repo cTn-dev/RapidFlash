@@ -36,19 +36,7 @@ function tab_initialize_advanced() {
                                 <div>' + firmware_options[j].description + '</div>\
                                 </label>\
                                 </div>';
-                            /*
-                            var dt = '<dt class="number" \
-                                title="' + firmware_options[j].description + '">\
-                                <input type="number"\
-                                       name="' + firmware_options[j].name + '" \
-                                       id="' + firmware_options[j].name + '" \
-                                       value="' + firmware_options[j].default + '" \
-                                       min="' + firmware_options[j].min + '" \
-                                       max="' + firmware_options[j].max + '" \/></dt>';
 
-                            var dd = '<dd class="number" title="' + firmware_options[j].description + '"><label for="' + firmware_options[j].name + '">[' + firmware_options[j].name + ']</label></dd>';
-
-                            */
                             target_element.append(div);
                             break;
                     }
@@ -61,7 +49,7 @@ function tab_initialize_advanced() {
         for (var i = 0; i < properties.length; i++) {
             if (properties[i][2] == 'checkbox') {
                 $('.tab-advanced input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
-            } else {
+            } else if (properties[i][2] == 'number') {
                 $('.tab-advanced input[name="' + properties[i][0] + '"]').val(properties[i][1]);
             }
         }
@@ -69,6 +57,7 @@ function tab_initialize_advanced() {
 
     $('#content').load("./tabs/advanced.html", function() {
         GUI.active_tab = 'advanced';
+        ga_tracker.sendAppView('Advanced');
 
         generate_ui([
             'MOTOR_REVERSE',

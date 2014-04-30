@@ -31,7 +31,7 @@ function tab_initialize_basic() {
         for (var i = 0; i < properties.length; i++) {
             if (properties[i][2] == 'checkbox') {
                 $('.tab-basic input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
-            } else {
+            } else if (properties[i][2] == 'number') {
                 $('.tab-basic input[name="' + properties[i][0] + '"]').val(properties[i][1]);
             }
         }
@@ -39,6 +39,7 @@ function tab_initialize_basic() {
 
     $('#content').load("./tabs/basic.html", function() {
         GUI.active_tab = 'basic';
+        ga_tracker.sendAppView('Basic');
 
         generate_ui([
             'MOTOR_REVERSE',
