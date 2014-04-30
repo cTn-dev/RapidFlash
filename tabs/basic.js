@@ -1,6 +1,6 @@
 function tab_initialize_basic() {
     function generate_ui(items) {
-        var target_element = $('.tab-basic dl:first');
+        var target_element = $('.tab-basic');
 
         function checked(val) {
             if (val) return 'checked';
@@ -11,10 +11,15 @@ function tab_initialize_basic() {
                 if (items[i] == firmware_options[j].name) {
                     switch (firmware_options[j].element) {
                         case 'checkbox':
-                            var dt = '<dt title="' + firmware_options[j].name + '"><input type="checkbox" name="' + firmware_options[j].name + '" id="' + firmware_options[j].name + '" ' + checked(firmware_options[j].default) + ' /></dt>';
-                            var dd = '<dd title="' + firmware_options[j].name + '"><label for="' + firmware_options[j].name + '">' + firmware_options[j].description + '</label></dd>';
+                            var div = '<div class="checkbox">\
+                                <label>\
+                                <div><input type="checkbox" name="' + firmware_options[j].name + '" id="' + firmware_options[j].name + '" ' + checked(firmware_options[j].default) + ' /></div>\
+                                <div>[' + firmware_options[j].name + ']</div>\
+                                <div>' + firmware_options[j].description + '</div>\
+                                </label>\
+                                </div>';
 
-                            target_element.append(dt + dd);
+                            target_element.append(div);
                             break;
                     }
 
@@ -25,9 +30,9 @@ function tab_initialize_basic() {
 
         for (var i = 0; i < properties.length; i++) {
             if (properties[i][2] == 'checkbox') {
-                $('input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
+                $('.tab-basic input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
             } else {
-                $('input[name="' + properties[i][0] + '"]').val(properties[i][1]);
+                $('.tab-basic input[name="' + properties[i][0] + '"]').val(properties[i][1]);
             }
         }
     }
@@ -57,7 +62,7 @@ function tab_initialize_basic() {
         }).change();
 
         // bind events
-        $('.tab-basic dl:first input').change(function() {
+        $('.tab-basic input').change(function() {
             var element = $(this);
             var type = element.prop('type');
             var name = element.prop('name');

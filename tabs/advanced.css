@@ -1,20 +1,33 @@
-.tab-advanced dl {
-}
-.tab-advanced dt {
-    float: left;
-
-    width: 20px;
+.tab-advanced .checkbox {
     height: 22px;
 
     line-height: 20px;
 }
-    .tab-advanced dt.number {
-        width: 60px;
-    }
-    .tab-advanced dt input[type="checkbox"] {
+    .tab-advanced .checkbox input {
         vertical-align: middle;
     }
-    .tab-advanced dt input[type="number"] {
+.tab-advanced .checkbox div:nth-child(1) {
+    float: left;
+
+    width: 20px;
+}
+.tab-advanced .checkbox div:nth-child(2) {
+    float: left;
+
+    width: 130px;
+
+    font-weight: bold;
+}
+.tab-advanced .checkbox div:nth-child(3) {
+    float: left;
+}
+
+.tab-advanced .number {
+    height: 22px;
+
+    line-height: 20px;
+}
+    .tab-advanced .number input {
         display: block;
 
         width: 45px;
@@ -23,15 +36,18 @@
 
         border: 1px solid silver;
     }
-.tab-advanced dd {
-    height: 22px;
+.tab-advanced .number div:nth-child(1) {
+    float: left;
 
-    margin-left: 20px;
+    width: 60px;
+}
+.tab-advanced .number div:nth-child(2) {
+    float: left;
 
-    line-height: 22px;
+    width: 130px;
+
     font-weight: bold;
 }
-    .tab-advanced dd.number {
-        margin-left: 60px;
-        line-height: 20px;
-    }
+.tab-advanced .number div:nth-child(3) {
+    float: left;
+}

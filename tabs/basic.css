@@ -1,20 +1,23 @@
-.tab-basic dl {
-}
-.tab-basic dt {
-    float: left;
-
-    width: 20px;
+.tab-basic .checkbox {
     height: 22px;
 
     line-height: 20px;
 }
-    .tab-basic dt input[type="checkbox"] {
+    .tab-basic .checkbox input {
         vertical-align: middle;
     }
-.tab-basic dd {
-    height: 22px;
+.tab-basic .checkbox div:nth-child(1) {
+    float: left;
 
-    margin-left: 20px;
+    width: 20px;
+}
+.tab-basic .checkbox div:nth-child(2) {
+    float: left;
 
-    line-height: 22px;
+    width: 120px;
+
+    font-weight: bold;
+}
+.tab-basic .checkbox div:nth-child(3) {
+    float: left;
 }
