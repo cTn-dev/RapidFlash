@@ -262,6 +262,19 @@ $(document).ready(function() {
         }
     });
 
+    $('a.reset').click(function() {
+        properties = [];
+
+        switch (GUI.active_tab) {
+            case 'basic':
+                tab_initialize_basic();
+                break;
+            case 'advanced':
+                tab_initialize_advanced();
+                break;
+        }
+    });
+
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
             if ($('select#programmer').val() != '0') {
