@@ -176,8 +176,9 @@ a:hover {
         float: left;
     }
     .buttons .save {
-        display: none; /* temporary disabled */
         float: left;
+
+        margin-left: 5px;
     }
     .buttons .flash {
         float: right;

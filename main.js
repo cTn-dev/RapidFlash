@@ -205,60 +205,63 @@ $(document).ready(function() {
     });
 
     $('a.save').click(function() {
-        if (ihex.raw != undefined && ihex.raw != 'undefined') {
-            var name = $('select#firmware').val();
+        var name = $('select#firmware').val();
 
-            chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
-                if (!fileEntry) {
-                    // no "valid" file selected/created, aborting
-                    console.log('No valid file selected, aborting');
-                    return;
-                }
+        if (name != 0 && name != 'custom') {
+            request_firmware(save);
 
-                chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
-                    console.log('Saving firmware to: ' + path);
-                    GUI.log('Saving firmware to: <strong>' + path + '</strong>');
+            function save() {
+                chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
+                    if (!fileEntry) {
+                        console.log('No valid file selected, aborting');
+                        return;
+                    }
 
-                    // change file entry from read only to read/write
-                    chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
-                        // check if file is writable
-                        chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
-                            if (isWritable) {
-                                var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
+                    chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
+                        console.log('Saving firmware to: ' + path);
+                        GUI.log('Saving firmware to: <strong>' + path + '</strong>');
 
-                                fileEntryWritable.createWriter(function(writer) {
-                                    writer.onerror = function (e) {
+                        // change file entry from read only to read/write
+                        chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
+                            // check if file is writable
+                            chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
+                                if (isWritable) {
+                                    var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
+
+                                    fileEntryWritable.createWriter(function(writer) {
+                                        writer.onerror = function (e) {
+                                            console.error(e);
+                                        };
+
+                                        var truncated = false;
+                                        writer.onwriteend = function() {
+                                            if (!truncated) {
+                                                // onwriteend will be fired again when truncation is finished
+                                                truncated = true;
+                                                writer.truncate(blob.size);
+
+                                                return;
+                                            }
+
+                                            // all went fine
+                                            callback(true);
+                                        };
+
+                                        writer.write(blob);
+                                    }, function (e) {
                                         console.error(e);
-                                    };
-
-                                    var truncated = false;
-                                    writer.onwriteend = function() {
-                                        if (!truncated) {
-                                            // onwriteend will be fired again when truncation is finished
-                                            truncated = true;
-                                            writer.truncate(blob.size);
-
-                                            return;
-                                        }
-
-                                        // all went fine
-                                        callback(true);
-                                    };
-
-                                    writer.write(blob);
-                                }, function (e) {
-                                    console.error(e);
-                                });
-                            } else {
-                                // Something went wrong or file is set to read only and cannot be changed
-                                console.log('You don\'t have write permissions for this file, sorry.');
-                            }
+                                    });
+                                } else {
+                                    // Something went wrong or file is set to read only and cannot be changed
+                                    console.log('You don\'t have write permissions for this file, sorry.');
+                                }
+                            });
                         });
                     });
                 });
-            });
+            }
         } else {
-            GUI.log('You need to <strong>load</strong> a valid firmware before you can save it');
+            GUI.log('Please select firmware');
         }
     });
 
@@ -287,38 +290,8 @@ $(document).ready(function() {
                             chrome.storage.local.set({'firmware': $('select#firmware').val()});
 
                             // Request firmware
-                            GUI.log('<strong>Requesting</strong> firmware');
-
-                            var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?';
-                            var firmware = $('select#firmware').val();
-
-                            var params = {};
-                            for (var i = 0; i < properties.length; i++) {
-                                params[properties[i][0]] = properties[i][1];
-                            }
-                            var url = host + 'BOARD=' + firmware + '.hex' + '&' + $.param(params);
-
-                            console.log('Requesting - ' + url);
-
-                            $.get(url, function(data) {
-                                GUI.log('Firmware <span style="color: green">received</span>');
-
-                                ihex.raw = data;
-
-                                // parsing hex in different thread
-                                var worker = new Worker('./js/workers/hex_parser.js');
-
-                                // "callback"
-                                worker.onmessage = function (event) {
-                                    ihex.parsed = event.data;
-
-                                    begin_upload(ihex.parsed);
-                                };
-
-                                // send data/string over for processing
-                                worker.postMessage(data);
-                            }).fail(function() {
-                                GUI.log('<span style="color: red">Failed</span> to contact compile server');
+                            request_firmware(function(raw, parsed) {
+                                begin_upload(parsed);
                             });
                         } else {
                             if (ihex.parsed) {
