@@ -20,6 +20,9 @@ a {
 a:hover {
     text-decoration: none;
 }
+input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1; /* required for chromium 33+ beta */
+}
 .clear-both {
     clear: both;
 }
