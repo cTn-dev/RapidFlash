@@ -1,7 +1,7 @@
 .tab-welcome .text {
     float: left;
 
-    width: 310px;
+    width: 58%;
     height: 131px;
 
     padding: 5px;
@@ -19,7 +19,7 @@
 
     margin-bottom: 5px;
 
-    width: 270px;
+    width: calc(42% - 20px);
 
     border: 1px solid silver;
 }
