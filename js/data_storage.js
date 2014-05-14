@@ -26,6 +26,7 @@ var firmware_type = [
     'rb70a',
     'rct50a',
     'tbs',
+    'tbs_hv',
     'tgy',
     'tgy6a',
     'tp_8khz',
