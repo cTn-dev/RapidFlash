@@ -28,7 +28,7 @@ $(document).ready(function() {
     // alternative - window.navigator.appVersion.match(/Chrome\/([0-9.]*)/)[1];
     GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' +
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
-        'Flasher: <strong>' + chrome.runtime.getManifest().version + '</strong>');
+        chrome.runtime.getManifest().name + ': <strong>' + chrome.runtime.getManifest().version + '</strong>');
 
     // alpha notice
     GUI.log('<span style="color: red">This application is currently in <strong>beta stage</strong></span>');
