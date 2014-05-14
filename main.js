@@ -138,6 +138,9 @@ $(document).ready(function() {
             case 'turnigy_usb_linker':
                 STK500V2.connect(9600, hex);
                 break;
+            case 'afro_esc_usb_linker':
+                STK500V2.connect(9600, hex);
+                break;
             case 'arduino_usb_linker':
                 STK500V2.connect(19600, hex);
                 break;
