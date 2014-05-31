@@ -248,6 +248,7 @@ var firmware_options = [
         max:            undefined
     },
     {
+        element:        'number',
         name:           'STOP_RC_PULS',
         description:    'Stop motor at or below this pulse length',
         default:        1060,
@@ -255,6 +256,7 @@ var firmware_options = [
         max:            2500
     },
     {
+        element:        'number',
         name:           'FULL_RC_PULS',
         description:    'Full speed at or above this pulse length',
         default:        1860,
@@ -262,6 +264,7 @@ var firmware_options = [
         max:            2500
     },
     {
+        element:        'number',
         name:           'MAX_RC_PULS',
         description:    'Throw away any pulses longer than this',
         default:        2400,
@@ -269,6 +272,7 @@ var firmware_options = [
         max:            5000
     },
     {
+        element:        'number',
         name:           'MIN_RC_PULS',
         description:    'Throw away any pulses shorter than this',
         default:        100,

@@ -72,7 +72,11 @@ function tab_initialize_advanced() {
             'DEBUG_ADC_DUMP',
             'MOTOR_DEBUG',
             'MOTOR_ADVANCE',
-            'BRAKE_SPEED'
+            'BRAKE_SPEED',
+            'STOP_RC_PULS',
+            'FULL_RC_PULS',
+            'MAX_RC_PULS',
+            'MIN_RC_PULS'
         ]);
 
         $('select#firmware').change(function() {
