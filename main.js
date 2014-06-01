@@ -30,9 +30,6 @@ $(document).ready(function() {
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
         chrome.runtime.getManifest().name + ': <strong>' + chrome.runtime.getManifest().version + '</strong>');
 
-    // alpha notice
-    GUI.log('<span style="color: red">This application is currently in <strong>beta stage</strong></span>');
-
     // generate list of firmwares
     var e_firmware = $('select#firmware');
     for (var i = 0; i < firmware_type.length; i++) {
