@@ -36,6 +36,19 @@ $(document).ready(function() {
         e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
     }
 
+    // generate list of releases
+    var e_releases = $('select#release');
+    request_releases(function(releases) {
+        for (var i = 0; i < releases.length; i++) {
+            e_releases.append('<option value="' + releases[i] + '">' + releases[i] + '</option>');
+        }
+
+        chrome.storage.local.get('release', function(result) {
+            if (result.release) $('select#release').val(result.release);
+        });
+    });
+
+    // auto-select certain settings if they were saved
     chrome.storage.local.get('programmer', function(result) {
         if (result.programmer) $('select#programmer').val(result.programmer);
     });
@@ -206,59 +219,64 @@ $(document).ready(function() {
 
     $('a.save').click(function() {
         var name = $('select#firmware').val();
+        var release = $('select#release').val();
 
-        if (name != 0 && name != 'custom') {
-            request_firmware(save);
+        if (name != '0' && name != 'custom') {
+            if (release != '0') {
+                request_firmware(save);
 
-            function save() {
-                chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
-                    if (!fileEntry) {
-                        console.log('No valid file selected, aborting');
-                        return;
-                    }
+                function save() {
+                    chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
+                        if (!fileEntry) {
+                            console.log('No valid file selected, aborting');
+                            return;
+                        }
 
-                    chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
-                        console.log('Saving firmware to: ' + path);
-                        GUI.log('Saving firmware to: <strong>' + path + '</strong>');
+                        chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
+                            console.log('Saving firmware to: ' + path);
+                            GUI.log('Saving firmware to: <strong>' + path + '</strong>');
 
-                        // change file entry from read only to read/write
-                        chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
-                            // check if file is writable
-                            chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
-                                if (isWritable) {
-                                    var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
+                            // change file entry from read only to read/write
+                            chrome.fileSystem.getWritableEntry(fileEntry, function(fileEntryWritable) {
+                                // check if file is writable
+                                chrome.fileSystem.isWritableEntry(fileEntryWritable, function(isWritable) {
+                                    if (isWritable) {
+                                        var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
 
-                                    fileEntryWritable.createWriter(function(writer) {
-                                        writer.onerror = function (e) {
+                                        fileEntryWritable.createWriter(function(writer) {
+                                            writer.onerror = function (e) {
+                                                console.error(e);
+                                            };
+
+                                            var truncated = false;
+                                            writer.onwriteend = function() {
+                                                if (!truncated) {
+                                                    // onwriteend will be fired again when truncation is finished
+                                                    truncated = true;
+                                                    writer.truncate(blob.size);
+
+                                                    return;
+                                                }
+
+                                                // all went fine
+                                                callback(true);
+                                            };
+
+                                            writer.write(blob);
+                                        }, function (e) {
                                             console.error(e);
-                                        };
-
-                                        var truncated = false;
-                                        writer.onwriteend = function() {
-                                            if (!truncated) {
-                                                // onwriteend will be fired again when truncation is finished
-                                                truncated = true;
-                                                writer.truncate(blob.size);
-
-                                                return;
-                                            }
-
-                                            // all went fine
-                                            callback(true);
-                                        };
-
-                                        writer.write(blob);
-                                    }, function (e) {
-                                        console.error(e);
-                                    });
-                                } else {
-                                    // Something went wrong or file is set to read only and cannot be changed
-                                    console.log('You don\'t have write permissions for this file, sorry.');
-                                }
+                                        });
+                                    } else {
+                                        // Something went wrong or file is set to read only and cannot be changed
+                                        console.log('You don\'t have write permissions for this file, sorry.');
+                                    }
+                                });
                             });
                         });
                     });
-                });
+                }
+            } else {
+                GUI.log('Please select release');
             }
         } else {
             GUI.log('Please select firmware');
@@ -283,28 +301,33 @@ $(document).ready(function() {
             if ($('select#programmer').val() != '0') {
                 if ($('select#firmware').val() != '0') {
                     if ($('select#port').val() != '0') {
-                        if ($('select#firmware').val() != 'custom') {
-                            // save some of the settings for next use
-                            chrome.storage.local.set({'last_used_port': $('select#port').val()});
-                            chrome.storage.local.set({'programmer': $('select#programmer').val()});
-                            chrome.storage.local.set({'firmware': $('select#firmware').val()});
-
-                            // Request firmware
-                            request_firmware(function(raw, parsed) {
-                                begin_upload(parsed);
-                            });
-                        } else {
-                            if (ihex.parsed) {
+                        if ($('select#release').val() != '0') {
+                            if ($('select#firmware').val() != 'custom') {
                                 // save some of the settings for next use
                                 chrome.storage.local.set({'last_used_port': $('select#port').val()});
                                 chrome.storage.local.set({'programmer': $('select#programmer').val()});
-                                chrome.storage.local.set({'firmware': 0});
+                                chrome.storage.local.set({'firmware': $('select#firmware').val()});
+                                chrome.storage.local.set({'release': $('select#release').val()});
 
-                                // custom firmware
-                                begin_upload(ihex.parsed);
+                                // Request firmware
+                                request_firmware(function(raw, parsed) {
+                                    begin_upload(parsed);
+                                });
                             } else {
-                                GUI.log('Please load valid firmware first');
+                                if (ihex.parsed) {
+                                    // save some of the settings for next use
+                                    chrome.storage.local.set({'last_used_port': $('select#port').val()});
+                                    chrome.storage.local.set({'programmer': $('select#programmer').val()});
+                                    chrome.storage.local.set({'firmware': 0});
+
+                                    // custom firmware
+                                    begin_upload(ihex.parsed);
+                                } else {
+                                    GUI.log('Please load valid firmware first');
+                                }
                             }
+                        } else {
+                            GUI.log('Please select release');
                         }
                     } else {
                         GUI.log('Please select port');
