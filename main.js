@@ -44,7 +44,17 @@ $(document).ready(function() {
         }
 
         chrome.storage.local.get('release', function(result) {
-            if (result.release) $('select#release').val(result.release);
+            if (result.release) {
+                // check if release is whitelisted (exists), if yes select
+                var options = $('select#release option');
+
+                for (var i = 0; i < options.length; i++) {
+                    if ($(options[i]).val() == result.release) {
+                        $('select#release').val(result.release);
+                        break;
+                    }
+                }
+            }
         });
     });
 
