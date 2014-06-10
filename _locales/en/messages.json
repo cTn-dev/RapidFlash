@@ -14,5 +14,22 @@
     },
     "notifications_click_here_to_start_app": {
         "message": "Click here to start the application"
+    },
+
+    "please_grant_usb_permissions": {
+        "message": "Please click on <strong>\"Request Optional Permissions\"</strong> button to grant application <strong style=\"color: red\">required</strong> <strong>USB</strong> access"
+    },
+    "usb_permissions_granted": {
+        "message": "Optional <strong>USB</strong> permissions <strong style=\"color: green\">granted</strong>"
+    },
+
+    "welcome_optional_permissions_head": {
+        "message": "Optional USB Permissions"
+    },
+    "welcome_optional_permissions_text": {
+        "message": "Due to addition of <strong>USBasp</strong> to supported programmers, RapidFlash <strong style=\"color: red\">requires</strong> USB access"
+    },
+    "welcome_request_optional_permissions": {
+        "message": "Request Optional Permissions"
     }
 }

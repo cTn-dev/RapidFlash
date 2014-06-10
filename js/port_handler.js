@@ -109,10 +109,27 @@ port_handler.prototype.check = function() {
             self.initial_ports = current_ports;
         }
 
+        check_usb_devices();
+    });
+
+    function check_usb_devices() {
+        chrome.usb.getDevices(usbDevices.USBASP, function(result) {
+            if (result.length) {
+                if (!$("div#controls #port [value='usbasp']").length) {
+                    $('div#controls #port').append('<option value="usbasp">USBASP</option>');
+                    $('div#controls #port').val('usbasp');
+                }
+            } else {
+                if ($("div#controls #port [value='usbasp']").length) {
+                   $("div#controls #port [value='usbasp']").remove();
+                }
+            }
+        });
+
         self.main_timeout_reference = setTimeout(function() {
             self.check();
         }, 250);
-    });
+    }
 };
 
 port_handler.prototype.update_port_select = function(ports) {

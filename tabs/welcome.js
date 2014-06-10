@@ -3,6 +3,11 @@ function tab_initialize_welcome() {
         GUI.active_tab = 'welcome';
         ga_tracker.sendAppView('Welcome');
 
+        check_usb_permissions();
+
+        // translate to user-selected language
+        localize();
+
         // load changelog content
         $('div.changelog .wrapper').load('./changelogs/app.html');
     });
