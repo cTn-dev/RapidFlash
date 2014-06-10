@@ -163,7 +163,42 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
     switch (step) {
         case 1:
-            self.upload_procedure(99);
+            self.controlTransfer('in', self.func.CONNECT, 0, 0, 4, 0, function(data) {
+                self.upload_procedure(2);
+            });
+            break;
+        case 2:
+            self.controlTransfer('in', self.func.ENABLEPROG, 0, 0, 4, 0, function(data) {
+                if (data[0] == 0) {
+                    self.upload_procedure(3);
+                } else {
+                    console.log('Target not found? i dont know');
+                    self.upload_procedure(99);
+                }
+            });
+            break;
+        case 3:
+            var i = 0;
+            var id = 0;
+
+            function get_chip_id() {
+                self.controlTransfer('in', self.func.TRANSMIT, 0x30, i++, 4, 0, function(data) {
+                    id |= data[3] << 8 * (3 - i);
+
+                    if (i < 3) {
+                        get_chip_id();
+                    } else {
+                        // we should verify chip ID, if we support it, continue
+                        console.log('Chip ID: ' + id);
+                        self.upload_procedure(4);
+                    }
+                });
+            }
+
+            get_chip_id();
+            break;
+        case 4:
+
             break;
         case 99:
             // cleanup
