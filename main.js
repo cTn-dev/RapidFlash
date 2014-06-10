@@ -164,6 +164,9 @@ $(document).ready(function() {
             case 'arduino_usb_linker':
                 STK500V2.connect(19200, hex);
                 break;
+            case 'usbasp':
+                console.log('todo');
+                break;
         }
     }
 

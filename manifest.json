@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "minimum_chrome_version": "33",
-    "version": "0.9",
+    "version": "0.10",
 
     "author": "cTn",
     "name": "RapidFlash",
@@ -21,10 +21,17 @@
         "https://*.github.com/",
         "http://www.openlrsng.org/",
         "serial",
+        "usb",
         "storage",
         "fileSystem",
         "fileSystem.write",
         "notifications"
+    ],
+
+    "optional_permissions": [
+        {"usbDevices": [
+            {"vendorId": 5824, "productId": 1500}
+        ]}
     ],
 
     "icons": {
