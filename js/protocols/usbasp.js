@@ -163,8 +163,13 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
     switch (step) {
         case 1:
+            self.upload_procedure(99);
             break;
         case 99:
+            // cleanup
+            console.log('Script finished after: ' + (microtime() - self.upload_time_start).toFixed(4) + ' seconds');
+
+            self.releaseInterface(0);
             break;
     }
 };

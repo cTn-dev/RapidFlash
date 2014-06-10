@@ -152,24 +152,6 @@ $(document).ready(function() {
 
     $('#tabs a:first').click();
 
-    // backend
-    function begin_upload(hex) {
-        switch($('select#programmer').val()) {
-            case 'turnigy_usb_linker':
-                STK500V2.connect(9600, hex);
-                break;
-            case 'afro_esc_usb_linker':
-                STK500V2.connect(9600, hex);
-                break;
-            case 'arduino_usb_linker':
-                STK500V2.connect(19200, hex);
-                break;
-            case 'usbasp':
-                console.log('todo');
-                break;
-        }
-    }
-
     $('a.load').click(function() {
         chrome.fileSystem.chooseEntry({type: 'openFile', accepts: [{extensions: ['hex']}]}, function(fileEntry) {
             if (!fileEntry) {
@@ -309,6 +291,24 @@ $(document).ready(function() {
         }
     });
 
+    // backend
+    function begin_upload(hex) {
+        switch($('select#programmer').val()) {
+            case 'turnigy_usb_linker':
+                STK500V2.connect(9600, hex);
+                break;
+            case 'afro_esc_usb_linker':
+                STK500V2.connect(9600, hex);
+                break;
+            case 'arduino_usb_linker':
+                STK500V2.connect(19200, hex);
+                break;
+            case 'usbasp':
+                USBASP.connect(hex);
+                break;
+        }
+    }
+
     $('a.flash').click(function() {
         if (!GUI.connect_lock) {
             if ($('select#programmer').val() != '0') {
@@ -408,3 +408,15 @@ $(document).ready(function() {
         }
     });
 });
+
+function microtime() {
+    var now = new Date().getTime() / 1000;
+
+    return now;
+}
+
+function millitime() {
+    var now = new Date().getTime();
+
+    return now;
+}
