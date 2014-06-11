@@ -155,6 +155,37 @@ USBasp_protocol.prototype.loadAddress = function(address, callback) {
     });
 };
 
+USBasp_protocol.prototype.verify_chip_signature = function(signature) {
+    var available_flash_size = 0;
+
+    switch (signature) {
+        case 0x1E9514: // testing only
+            console.log('Chip recognized as 328');
+            available_flash_size = 32768;
+            break;
+        case 0x1E950F: // testing only
+            console.log('Chip recognized as 328P');
+            available_flash_size = 32768;
+            break;
+        case 0x1E9307:
+            console.log('Chip recognized as 8A');
+            available_flash_size = 8192;
+            break;
+    }
+
+    if (available_flash_size > 0) {
+        if (this.hex.bytes_total < available_flash_size) {
+            return true;
+        } else {
+            console.log('HEX too big');
+        }
+    }
+
+    console.log('Chip not supported, sorry :-(');
+
+    return false;
+};
+
 USBasp_protocol.prototype.verify_flash = function(first_array, second_array) {
     for (var i = 0; i < first_array.length; i++) {
         if (first_array[i] != second_array[i]) {
@@ -205,7 +236,12 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     } else {
                         // we should verify chip ID, if we support it, continue
                         console.log('Chip ID: ' + id);
-                        self.upload_procedure(4);
+
+                        if (self.verify_chip_signature(id)) {
+                            self.upload_procedure(4);
+                        } else {
+                            self.upload_procedure(99);
+                        }
                     }
                 });
             }
@@ -257,7 +293,19 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         }
                     } else {
                         console.log('High fuse: ' + high_fuse);
-                        self.upload_procedure(6);
+
+                        if ((high_fuse & 0x0F) != 0x0A) {
+                            console.log('High fuse incompatible with bootloader, adjusting...');
+
+                            high_fuse = high_fuse & 0xFA;
+
+                            self.controlTransfer('in', self.func.TRANSMIT, 0xA8AC, (high_fuse << 8), 4, 0, function(data) {
+                                i = 0;
+                                read_high_fuse();
+                            });
+                        } else {
+                            self.upload_procedure(6);
+                        }
                     }
                 });
             }
