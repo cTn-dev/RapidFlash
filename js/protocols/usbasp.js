@@ -297,7 +297,9 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         if ((high_fuse & 0x0F) != 0x0A) {
                             console.log('High fuse incompatible with bootloader, adjusting...');
 
-                            high_fuse = high_fuse & 0xFA;
+                            // WATCH OUT !!! modifying upper 4 bits can brick the chip
+                            high_fuse = high_fuse >> 4; // drop lower 4 bits
+                            high_fuse = (high_fuse << 4) | 0x0A; // add proper lower 4 bits
 
                             self.controlTransfer('in', self.func.TRANSMIT, 0xA8AC, (high_fuse << 8), 4, 0, function(data) {
                                 i = 0;
