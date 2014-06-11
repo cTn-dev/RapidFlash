@@ -218,7 +218,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             var low_fuse = null;
 
             function read_low_fuse() {
-                self.controlTransfer('in', self.func.TRANSMIT, 0x50, 0, 4, 0, function(data) { // output seems to be ok
+                self.controlTransfer('in', self.func.TRANSMIT, 0x0050, 0, 4, 0, function(data) {
                     if (i < 3) {
                         if (low_fuse == data[3]) {
                             low_fuse = data[3];
@@ -244,7 +244,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             var high_fuse = null;
 
             function read_high_fuse() {
-                self.controlTransfer('in', self.func.TRANSMIT, 0x58, 0x08, 4, 0, function(data) { // output seems to be wrong !!!
+                self.controlTransfer('in', self.func.TRANSMIT, 0x0858, 0, 4, 0, function(data) {
                     if (i < 3) {
                         if (high_fuse == data[3]) {
                             high_fuse = data[3];
@@ -270,7 +270,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             var e_fuse = null;
 
             function read_e_fuse() {
-                self.controlTransfer('in', self.func.TRANSMIT, 0x58, 0x08, 4, 0, function(data) { // output seems to be wrong !!!
+                self.controlTransfer('in', self.func.TRANSMIT, 0x0850, 0, 4, 0, function(data) {
                     if (i < 3) {
                         if (e_fuse == data[3]) {
                             e_fuse = data[3];
@@ -292,10 +292,9 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             break;
         case 7:
             // chip erase
-            self.controlTransfer('in', self.func.TRANSMIT, 0xAC, 0x80, 4, 0, function(data) { // output seems to be wrong !!!
-                // avrdude response = [00] [ac] [80] [00]
-                // our response = [00] [ac] [00] [80] ????!!!!
+            console.log('Executing global chip erase');
 
+            self.controlTransfer('in', self.func.TRANSMIT, 0x80AC, 0, 4, 0, function(data) {
                 self.chip_erased = true;
                 self.upload_procedure(1);
             });
@@ -304,6 +303,8 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             // write
             // code below might be completely wrong since i don't understand the buffer sequence for avrdude: usbasp_transmit("USBASP_FUNC_WRITEFLASH", 0x00, 0x04, 0x80, 0x03)
             // my buest guess is that first byte indicates the position in a block, second byte indicates block, third byte is transmission length, and fourth i got no clue
+            console.log('Writing ...');
+
             var blocks = self.hex.data.length - 1;
             var flashing_block = 0;
             var address = self.hex.data[flashing_block].address;
