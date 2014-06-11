@@ -314,8 +314,8 @@ $(document).ready(function() {
             if ($('select#programmer').val() != '0') {
                 if ($('select#firmware').val() != '0') {
                     if ($('select#port').val() != '0') {
-                        if ($('select#release').val() != '0') {
-                            if ($('select#firmware').val() != 'custom') {
+                        if ($('select#firmware').val() != 'custom') {
+                            if ($('select#release').val() != '0') {
                                 // save some of the settings for next use
                                 chrome.storage.local.set({'last_used_port': $('select#port').val()});
                                 chrome.storage.local.set({'programmer': $('select#programmer').val()});
@@ -327,20 +327,20 @@ $(document).ready(function() {
                                     begin_upload(parsed);
                                 });
                             } else {
-                                if (ihex.parsed) {
-                                    // save some of the settings for next use
-                                    chrome.storage.local.set({'last_used_port': $('select#port').val()});
-                                    chrome.storage.local.set({'programmer': $('select#programmer').val()});
-                                    chrome.storage.local.set({'firmware': 0});
-
-                                    // custom firmware
-                                    begin_upload(ihex.parsed);
-                                } else {
-                                    GUI.log('Please load valid firmware first');
-                                }
+                                GUI.log('Please select release');
                             }
                         } else {
-                            GUI.log('Please select release');
+                            if (ihex.parsed) {
+                                // save some of the settings for next use
+                                chrome.storage.local.set({'last_used_port': $('select#port').val()});
+                                chrome.storage.local.set({'programmer': $('select#programmer').val()});
+                                chrome.storage.local.set({'firmware': 0});
+
+                                // custom firmware
+                                begin_upload(ihex.parsed);
+                            } else {
+                                GUI.log('Please load valid firmware first');
+                            }
                         }
                     } else {
                         GUI.log('Please select port');
