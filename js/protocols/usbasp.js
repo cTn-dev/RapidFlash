@@ -150,8 +150,8 @@ USBasp_protocol.prototype.controlTransfer = function(direction, request, value, 
 USBasp_protocol.prototype.loadAddress = function(address, callback) {
     var self = this;
 
-    self.controlTransfer('out', self.func.SETLONGADDRESS, 0, 0, 0, [address, (address >> 8), (address >> 16), (address >> 24)], function() {
-        callback();
+    self.controlTransfer('in', self.func.SETLONGADDRESS, (address & 0xFFFF), (address >> 16), 0, 4, function(data) {
+        callback(data);
     });
 };
 
@@ -316,7 +316,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     var data_to_flash = self.hex.data[flashing_block].data.slice(bytes_flashed, bytes_flashed + bytes_to_write);
 
                     self.loadAddress(address, function() {
-                        self.controlTransfer('out', self.func.WRITEFLASH, 0, 0, bytes_to_write, data_to_flash, function() {
+                        self.controlTransfer('out', self.func.WRITEFLASH, address, bytes_to_write | (0x03 << 8), 0, data_to_flash, function() { // find out what 0x03 means, best guess write to flash memory
                             address += bytes_to_write;
                             bytes_flashed += bytes_to_write;
 
