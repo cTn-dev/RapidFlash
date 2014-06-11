@@ -12,6 +12,7 @@ var USBasp_protocol = function() {
     this.verify_hex;
 
     this.handle = null; // connection handle
+    this.chip_erased = false; // on chip erase mcu reboots, we need to keep track
 
     this.func = {
         CONNECT:            1,
@@ -41,6 +42,7 @@ USBasp_protocol.prototype.connect = function(hex) {
     // reset and set some variables before we start
     self.upload_time_start = microtime();
     self.verify_hex = [];
+    self.chip_erased = false;
 
     chrome.usb.getDevices(usbDevices.USBASP, function(result) {
         if (result.length) {
@@ -145,6 +147,14 @@ USBasp_protocol.prototype.controlTransfer = function(direction, request, value, 
     }
 };
 
+USBasp_protocol.prototype.loadAddress = function(address, callback) {
+    var self = this;
+
+    self.controlTransfer('out', self.func.SETLONGADDRESS, 0, 0, 0, [address, (address >> 8), (address >> 16), (address >> 24)], function() {
+        callback();
+    });
+};
+
 USBasp_protocol.prototype.verify_flash = function(first_array, second_array) {
     for (var i = 0; i < first_array.length; i++) {
         if (first_array[i] != second_array[i]) {
@@ -170,7 +180,11 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
         case 2:
             self.controlTransfer('in', self.func.ENABLEPROG, 0, 0, 4, 0, function(data) {
                 if (data[0] == 0) {
-                    self.upload_procedure(3);
+                    if (!self.chip_erased) {
+                        self.upload_procedure(3);
+                    } else {
+                        self.upload_procedure(8);
+                    }
                 } else {
                     console.log('Target not found? i dont know');
                     self.upload_procedure(99);
@@ -178,6 +192,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             });
             break;
         case 3:
+            // chip id
             var i = 0;
             var id = 0;
 
@@ -198,7 +213,137 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             get_chip_id();
             break;
         case 4:
+            // low fuse
+            var i = 0;
+            var low_fuse = null;
 
+            function read_low_fuse() {
+                self.controlTransfer('in', self.func.TRANSMIT, 0x50, 0, 4, 0, function(data) { // output seems to be ok
+                    if (i < 3) {
+                        if (low_fuse == data[3]) {
+                            low_fuse = data[3];
+                            i++;
+                            read_low_fuse();
+                        } else {
+                            i = 0;
+                            low_fuse = data[3];
+                            read_low_fuse();
+                        }
+                    } else {
+                        console.log('Low fuse: ' + low_fuse);
+                        self.upload_procedure(5);
+                    }
+                });
+            }
+
+            read_low_fuse();
+            break;
+        case 5:
+            // high fuse
+            var i = 0;
+            var high_fuse = null;
+
+            function read_high_fuse() {
+                self.controlTransfer('in', self.func.TRANSMIT, 0x58, 0x08, 4, 0, function(data) { // output seems to be wrong !!!
+                    if (i < 3) {
+                        if (high_fuse == data[3]) {
+                            high_fuse = data[3];
+                            i++;
+                            read_high_fuse();
+                        } else {
+                            i = 0;
+                            high_fuse = data[3];
+                            read_high_fuse();
+                        }
+                    } else {
+                        console.log('High fuse: ' + high_fuse);
+                        self.upload_procedure(6);
+                    }
+                });
+            }
+
+            read_high_fuse();
+            break;
+        case 6:
+            // e fuse
+            var i = 0;
+            var e_fuse = null;
+
+            function read_e_fuse() {
+                self.controlTransfer('in', self.func.TRANSMIT, 0x58, 0x08, 4, 0, function(data) { // output seems to be wrong !!!
+                    if (i < 3) {
+                        if (e_fuse == data[3]) {
+                            e_fuse = data[3];
+                            i++;
+                            read_e_fuse();
+                        } else {
+                            i = 0;
+                            e_fuse = data[3];
+                            read_e_fuse();
+                        }
+                    } else {
+                        console.log('E fuse: ' + e_fuse);
+                        self.upload_procedure(7);
+                    }
+                });
+            }
+
+            read_e_fuse();
+            break;
+        case 7:
+            // chip erase
+            self.controlTransfer('in', self.func.TRANSMIT, 0xAC, 0x80, 4, 0, function(data) { // output seems to be wrong !!!
+                // avrdude response = [00] [ac] [80] [00]
+                // our response = [00] [ac] [00] [80] ????!!!!
+
+                self.chip_erased = true;
+                self.upload_procedure(1);
+            });
+            break;
+        case 8:
+            // write
+            // code below might be completely wrong since i don't understand the buffer sequence for avrdude: usbasp_transmit("USBASP_FUNC_WRITEFLASH", 0x00, 0x04, 0x80, 0x03)
+            // my buest guess is that first byte indicates the position in a block, second byte indicates block, third byte is transmission length, and fourth i got no clue
+            var blocks = self.hex.data.length - 1;
+            var flashing_block = 0;
+            var address = self.hex.data[flashing_block].address;
+            var bytes_flashed = 0;
+
+            function write_to_flash() {
+                if (bytes_flashed < self.hex.data[flashing_block].bytes) {
+                    var bytes_to_write = ((bytes_flashed + 128) <= self.hex.data[flashing_block].bytes) ? 128 : (self.hex.data[flashing_block].bytes - bytes_flashed);
+                    var data_to_flash = self.hex.data[flashing_block].data.slice(bytes_flashed, bytes_flashed + bytes_to_write);
+
+                    self.loadAddress(address, function() {
+                        self.controlTransfer('out', self.func.WRITEFLASH, 0, 0, bytes_to_write, data_to_flash, function() {
+                            address += bytes_to_write;
+                            bytes_flashed += bytes_to_write;
+
+                            write_to_flash();
+                        });
+                    });
+                } else {
+                    if (flashing_block < blocks) {
+                        // move to another block
+                        flashing_block++;
+
+                        address = self.hex.data[flashing_block].address;
+                        bytes_flashed = 0;
+
+                        write_to_flash();
+                    } else {
+                        // all blocks flashed
+                        console.log('Writing: done');
+
+                        // proceed to next step
+                        self.upload_procedure(9);
+                    }
+                }
+            }
+
+            write_to_flash();
+            break;
+        case 9:
             break;
         case 99:
             // cleanup
