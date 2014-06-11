@@ -301,9 +301,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             break;
         case 8:
             // write
-            // code below might be completely wrong since i don't understand the buffer sequence for avrdude: usbasp_transmit("USBASP_FUNC_WRITEFLASH", 0x00, 0x04, 0x80, 0x03)
-            // my buest guess is that first byte indicates the position in a block, second byte indicates block, third byte is transmission length, and fourth i got no clue
-            console.log('Writing ...');
+            console.log('Writing data ...');
 
             var blocks = self.hex.data.length - 1;
             var flashing_block = 0;
@@ -316,7 +314,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     var data_to_flash = self.hex.data[flashing_block].data.slice(bytes_flashed, bytes_flashed + bytes_to_write);
 
                     self.loadAddress(address, function() {
-                        self.controlTransfer('out', self.func.WRITEFLASH, address, bytes_to_write | (0x03 << 8), 0, data_to_flash, function() { // find out what 0x03 means, best guess write to flash memory
+                        self.controlTransfer('out', self.func.WRITEFLASH, address, bytes_to_write | (0x03 << 8), 0, data_to_flash, function() { // index should be 0 for new usbasp, old usb asp needs the (bytes_to_write | (0x03 << 8))
                             address += bytes_to_write;
                             bytes_flashed += bytes_to_write;
 
@@ -345,6 +343,72 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             write_to_flash();
             break;
         case 9:
+            // verify
+            console.log('Verifying data ...');
+
+            var blocks = self.hex.data.length - 1;
+            var reading_block = 0;
+            var address = self.hex.data[reading_block].address;
+            var bytes_verified = 0;
+
+            // initialize arrays
+            for (var i = 0; i <= blocks; i++) {
+                self.verify_hex.push([]);
+            }
+
+            function read_from_flash() {
+                if (bytes_verified < self.hex.data[reading_block].bytes) {
+                    var bytes_to_read = ((bytes_verified + 128) <= self.hex.data[reading_block].bytes) ? 128 : (self.hex.data[reading_block].bytes - bytes_verified);
+
+                    self.loadAddress(address, function() {
+                        self.controlTransfer('in', self.func.READFLASH, 0, 0, bytes_to_read, 0, function(data) {
+                            for (var i = 0; i < data.length; i++) {
+                                self.verify_hex[reading_block].push(data[i]);
+                            }
+
+                            address += bytes_to_read;
+                            bytes_verified += bytes_to_read;
+
+                            read_from_flash();
+                        });
+                    });
+                } else {
+                    if (reading_block < blocks) {
+                        // move to another block
+                        reading_block++;
+                        address = self.hex.data[reading_block].address;
+                        bytes_verified = 0;
+
+                        read_from_flash();
+                    } else {
+                        // all blocks read, verify
+
+                        var verify = true;
+                        for (var i = 0; i <= blocks; i++) {
+                            verify = self.verify_flash(self.hex.data[i].data, self.verify_hex[i]);
+
+                            if (!verify) break;
+                        }
+
+                        if (verify) {
+                            console.log('Programming: SUCCESSFUL');
+                            self.upload_procedure(10);
+                        } else {
+                            console.log('Programming: FAILED');
+                            self.upload_procedure(99);
+                        }
+                    }
+                }
+            }
+
+            read_from_flash();
+            break;
+        case 10:
+            // disconnect
+            self.controlTransfer('in', self.func.DISCONNECT, 0, 0, 4, 0, function(data) {
+                console.log('Disconnecting');
+                self.upload_procedure(99);
+            });
             break;
         case 99:
             // cleanup
