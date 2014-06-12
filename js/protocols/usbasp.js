@@ -12,6 +12,8 @@ var USBasp_protocol = function() {
     this.verify_hex;
 
     this.handle = null; // connection handle
+
+    this.fuse_count = 0;
     this.chip_erased = false; // on chip erase mcu reboots, we need to keep track
 
     this.func = {
@@ -42,7 +44,9 @@ USBasp_protocol.prototype.connect = function(hex) {
     // reset and set some variables before we start
     self.upload_time_start = microtime();
     self.verify_hex = [];
+
     self.chip_erased = false;
+    self.fuse_count = 0;
 
     chrome.usb.getDevices(usbDevices.USBASP, function(result) {
         if (result.length) {
@@ -156,19 +160,26 @@ USBasp_protocol.prototype.loadAddress = function(address, callback) {
 };
 
 USBasp_protocol.prototype.verify_chip_signature = function(signature) {
+    var self = this;
     var available_flash_size = 0;
 
     switch (signature) {
         case 0x1E9514: // testing only
             console.log('Chip recognized as 328');
+
+            self.fuse_count = 3;
             available_flash_size = 32768;
             break;
         case 0x1E950F: // testing only
             console.log('Chip recognized as 328P');
+
+            self.fuse_count = 3;
             available_flash_size = 32768;
             break;
         case 0x1E9307:
             console.log('Chip recognized as 8A');
+
+            self.fuse_count = 2;
             available_flash_size = 8192;
             break;
     }
@@ -250,48 +261,36 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             break;
         case 4:
             // low fuse
-            var i = 0;
             var low_fuse = null;
 
             function read_low_fuse() {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0050, 0, 4, 0, function(data) {
-                    if (i < 3) {
-                        if (low_fuse == data[3]) {
-                            low_fuse = data[3];
-                            i++;
-                            read_low_fuse();
-                        } else {
-                            i = 0;
-                            low_fuse = data[3];
-                            read_low_fuse();
-                        }
-                    } else {
+                    if (data.length == 4) {
+                        low_fuse = data[3];
+
                         console.log('Low fuse: ' + low_fuse);
                         self.upload_procedure(5);
+                    } else {
+                        self.upload_procedure(99);
                     }
                 });
             }
 
-            read_low_fuse();
+            if (self.fuse_count >= 1) {
+                read_low_fuse();
+            } else {
+                self.upload_procedure(5);
+            }
             break;
         case 5:
             // high fuse
-            var i = 0;
             var high_fuse = null;
 
             function read_high_fuse() {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0858, 0, 4, 0, function(data) {
-                    if (i < 3) {
-                        if (high_fuse == data[3]) {
-                            high_fuse = data[3];
-                            i++;
-                            read_high_fuse();
-                        } else {
-                            i = 0;
-                            high_fuse = data[3];
-                            read_high_fuse();
-                        }
-                    } else {
+                    if (data.length == 4) {
+                        high_fuse = data[3];
+
                         console.log('High fuse: ' + high_fuse);
 
                         if (high_fuse != null && (high_fuse & 0x0F) != 0x0A) {
@@ -301,43 +300,45 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                             high_fuse = (highfuse & 0xF0) | 0x0A;
 
                             self.controlTransfer('in', self.func.TRANSMIT, 0xA8AC, (high_fuse << 8), 4, 0, function(data) {
-                                i = 0;
                                 read_high_fuse();
                             });
                         } else {
                             self.upload_procedure(6);
                         }
+                    } else {
+                        self.upload_procedure(99);
                     }
                 });
             }
 
-            read_high_fuse();
+            if (self.fuse_count >= 2) {
+                read_high_fuse();
+            } else {
+                self.upload_procedure(6);
+            }
             break;
         case 6:
             // extended fuse
-            var i = 0;
             var extended_fuse = null;
 
             function read_extended_fuse() {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0850, 0, 4, 0, function(data) {
-                    if (i < 3) {
-                        if (extended_fuse == data[3]) {
-                            extended_fuse = data[3];
-                            i++;
-                            read_extended_fuse();
-                        } else {
-                            i = 0;
-                            extended_fuse = data[3];
-                            read_extended_fuse();
-                        }
-                    } else {
+                    if (data.length == 4) {
+                        extended_fuse = data[3];
+
                         console.log('Extended fuse: ' + extended_fuse);
                         self.upload_procedure(7);
+                    } else {
+                        self.upload_procedure(99);
                     }
                 });
             }
 
-            read_extended_fuse();
+            if (self.fuse_count >= 3) {
+                read_extended_fuse();
+            } else {
+                self.upload_procedure(7);
+            }
             break;
         case 7:
             // chip erase
