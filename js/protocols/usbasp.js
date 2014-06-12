@@ -294,12 +294,11 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     } else {
                         console.log('High fuse: ' + high_fuse);
 
-                        if ((high_fuse & 0x0F) != 0x0A) {
+                        if (high_fuse != null && (high_fuse & 0x0F) != 0x0A) {
                             console.log('High fuse incompatible with bootloader, adjusting...');
 
                             // WATCH OUT !!! modifying upper 4 bits can brick the chip
-                            high_fuse = high_fuse >> 4; // drop lower 4 bits
-                            high_fuse = (high_fuse << 4) | 0x0A; // add proper lower 4 bits
+                            high_fuse = (highfuse & 0xF0) | 0x0A;
 
                             self.controlTransfer('in', self.func.TRANSMIT, 0xA8AC, (high_fuse << 8), 4, 0, function(data) {
                                 i = 0;
@@ -315,30 +314,30 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             read_high_fuse();
             break;
         case 6:
-            // e fuse
+            // extended fuse
             var i = 0;
-            var e_fuse = null;
+            var extended_fuse = null;
 
-            function read_e_fuse() {
+            function read_extended_fuse() {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0850, 0, 4, 0, function(data) {
                     if (i < 3) {
-                        if (e_fuse == data[3]) {
-                            e_fuse = data[3];
+                        if (extended_fuse == data[3]) {
+                            extended_fuse = data[3];
                             i++;
-                            read_e_fuse();
+                            read_extended_fuse();
                         } else {
                             i = 0;
-                            e_fuse = data[3];
-                            read_e_fuse();
+                            extended_fuse = data[3];
+                            read_extended_fuse();
                         }
                     } else {
-                        console.log('E fuse: ' + e_fuse);
+                        console.log('Extended fuse: ' + extended_fuse);
                         self.upload_procedure(7);
                     }
                 });
             }
 
-            read_e_fuse();
+            read_extended_fuse();
             break;
         case 7:
             // chip erase
