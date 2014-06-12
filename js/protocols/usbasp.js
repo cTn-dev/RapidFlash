@@ -14,6 +14,7 @@ var USBasp_protocol = function() {
     this.handle = null; // connection handle
 
     this.fuse_count = 0;
+    this.maximum_transmission_size = 0;
     this.chip_erased = false; // on chip erase mcu reboots, we need to keep track
 
     this.func = {
@@ -45,8 +46,9 @@ USBasp_protocol.prototype.connect = function(hex) {
     self.upload_time_start = microtime();
     self.verify_hex = [];
 
-    self.chip_erased = false;
     self.fuse_count = 0;
+    self.maximum_transmission_size = 0;
+    self.chip_erased = false;
 
     chrome.usb.getDevices(usbDevices.USBASP, function(result) {
         if (result.length) {
@@ -168,18 +170,21 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
             console.log('Chip recognized as 328');
 
             self.fuse_count = 3;
+            self.maximum_transmission_size = 128;
             available_flash_size = 32768;
             break;
         case 0x1E950F: // testing only
             console.log('Chip recognized as 328P');
 
             self.fuse_count = 3;
+            self.maximum_transmission_size = 128;
             available_flash_size = 32768;
             break;
         case 0x1E9307:
             console.log('Chip recognized as 8A');
 
             self.fuse_count = 2;
+            self.maximum_transmission_size = 64;
             available_flash_size = 8192;
             break;
     }
@@ -360,7 +365,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
             function write_to_flash() {
                 if (bytes_flashed < self.hex.data[flashing_block].bytes) {
-                    var bytes_to_write = ((bytes_flashed + 128) <= self.hex.data[flashing_block].bytes) ? 128 : (self.hex.data[flashing_block].bytes - bytes_flashed);
+                    var bytes_to_write = ((bytes_flashed + self.maximum_transmission_size) <= self.hex.data[flashing_block].bytes) ? self.maximum_transmission_size : (self.hex.data[flashing_block].bytes - bytes_flashed);
                     var data_to_flash = self.hex.data[flashing_block].data.slice(bytes_flashed, bytes_flashed + bytes_to_write);
 
                     self.loadAddress(address, function() {
@@ -408,7 +413,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
             function read_from_flash() {
                 if (bytes_verified < self.hex.data[reading_block].bytes) {
-                    var bytes_to_read = ((bytes_verified + 128) <= self.hex.data[reading_block].bytes) ? 128 : (self.hex.data[reading_block].bytes - bytes_verified);
+                    var bytes_to_read = ((bytes_verified + self.maximum_transmission_size) <= self.hex.data[reading_block].bytes) ? self.maximum_transmission_size : (self.hex.data[reading_block].bytes - bytes_verified);
 
                     self.loadAddress(address, function() {
                         self.controlTransfer('in', self.func.READFLASH, 0, 0, bytes_to_read, 0, function(data) {
