@@ -220,20 +220,23 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
     switch (step) {
         case 1:
-            self.controlTransfer('in', self.func.CONNECT, 0, 0, 4, 0, function(data) {
+            self.controlTransfer('in', self.func.CONNECT, 0, 0, 0, 0, function(data) {
                 self.upload_procedure(2);
             });
             break;
         case 2:
-            self.controlTransfer('in', self.func.ENABLEPROG, 0, 0, 4, 0, function(data) {
+            self.controlTransfer('in', self.func.ENABLEPROG, 0, 0, 1, 0, function(data) {
                 if (data[0] == 0) {
                     if (!self.chip_erased) {
                         self.upload_procedure(3);
                     } else {
                         self.upload_procedure(8);
                     }
+                } else if (data[0] == 1) {
+                    console.log('Programming target not found');
+                    self.upload_procedure(99);
                 } else {
-                    console.log('Target not found? i dont know');
+                    console.log('Enabling programming mode failed');
                     self.upload_procedure(99);
                 }
             });
