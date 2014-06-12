@@ -373,6 +373,8 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                     self.loadAddress(address, function() {
                         self.controlTransfer('out', self.func.WRITEFLASH, address, bytes_to_write | (0x03 << 8), 0, data_to_flash, function() { // index should be 0 for new usbasp, old usb asp needs the (bytes_to_write | (0x03 << 8))
+                            console.log('USBASP - Writing to: ' + address + ', ' + bytes_to_write + ' bytes');
+
                             address += bytes_to_write;
                             bytes_flashed += bytes_to_write;
 
@@ -420,6 +422,8 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                     self.loadAddress(address, function() {
                         self.controlTransfer('in', self.func.READFLASH, 0, 0, bytes_to_read, 0, function(data) {
+                            console.log('USBASP - Reading from: ' + address + ', ' + bytes_to_read + ' bytes');
+
                             for (var i = 0; i < data.length; i++) {
                                 self.verify_hex[reading_block].push(data[i]);
                             }
