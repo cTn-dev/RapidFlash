@@ -234,10 +234,10 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     }
                 } else if (data[0] == 1) {
                     console.log('Programming target not found');
-                    self.upload_procedure(99);
+                    self.upload_procedure(10);
                 } else {
                     console.log('Enabling programming mode failed');
-                    self.upload_procedure(99);
+                    self.upload_procedure(10);
                 }
             });
             break;
@@ -259,7 +259,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         if (self.verify_chip_signature(id)) {
                             self.upload_procedure(4);
                         } else {
-                            self.upload_procedure(99);
+                            self.upload_procedure(10);
                         }
                     }
                 });
@@ -279,7 +279,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         console.log('Low fuse: ' + low_fuse);
                         self.upload_procedure(5);
                     } else {
-                        self.upload_procedure(99);
+                        self.upload_procedure(10);
                     }
                 });
             }
@@ -314,7 +314,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                             self.upload_procedure(6);
                         }
                     } else {
-                        self.upload_procedure(99);
+                        self.upload_procedure(10);
                     }
                 });
             }
@@ -337,7 +337,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         console.log('Extended fuse: ' + extended_fuse);
                         self.upload_procedure(7);
                     } else {
-                        self.upload_procedure(99);
+                        self.upload_procedure(10);
                     }
                 });
             }
@@ -454,11 +454,10 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                         if (verify) {
                             console.log('Programming: SUCCESSFUL');
-                            self.upload_procedure(10);
                         } else {
                             console.log('Programming: FAILED');
-                            self.upload_procedure(99);
                         }
+                        self.upload_procedure(10);
                     }
                 }
             }
