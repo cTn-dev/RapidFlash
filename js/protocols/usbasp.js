@@ -234,10 +234,11 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     }
                 } else if (data[0] == 1) {
                     console.log('Programming target not found');
+                    self.upload_procedure(10);
                 } else {
                     console.log('Enabling programming mode failed');
+                    self.upload_procedure(10);
                 }
-                self.upload_procedure(10);
             });
             break;
         case 3:
