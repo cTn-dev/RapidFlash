@@ -11,6 +11,7 @@ var USBasp_protocol = function() {
     this.hex; // ref
     this.verify_hex;
 
+    this.connected = null;
     this.handle = null; // connection handle
 
     this.fuse_count = 0;
@@ -46,6 +47,7 @@ USBasp_protocol.prototype.connect = function(hex) {
     self.upload_time_start = microtime();
     self.verify_hex = [];
 
+    self.connected = false;
     self.fuse_count = 0;
     self.maximum_transmission_size = 0;
     self.chip_erased = false;
@@ -227,6 +229,8 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
         case 2:
             self.controlTransfer('in', self.func.ENABLEPROG, 0, 0, 1, 0, function(data) {
                 if (data[0] == 0) {
+                    self.connected = true;
+
                     if (!self.chip_erased) {
                         self.upload_procedure(3);
                     } else {
@@ -454,30 +458,33 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                         if (verify) {
                             console.log('Programming: SUCCESSFUL');
-                            self.upload_procedure(10);
                         } else {
                             console.log('Programming: FAILED');
-                            self.upload_procedure(99);
                         }
+
+                        self.upload_procedure(99);
                     }
                 }
             }
 
             read_from_flash();
             break;
-        case 10:
-            // disconnect
-            self.controlTransfer('in', self.func.DISCONNECT, 0, 0, 4, 0, function(data) {
-                console.log('Disconnecting');
-                self.upload_procedure(99);
-            });
-            break;
-        case 99:
+        default:
             // cleanup
-            console.log('Script finished after: ' + (microtime() - self.upload_time_start).toFixed(4) + ' seconds');
 
-            self.releaseInterface(0);
-            break;
+            if (self.connected) {
+                console.log('Disconnecting');
+
+                self.controlTransfer('in', self.func.DISCONNECT, 0, 0, 0, 0, function(data) {
+                    console.log('Script finished after: ' + (microtime() - self.upload_time_start).toFixed(4) + ' seconds');
+
+                    self.releaseInterface(0);
+                });
+            } else {
+                console.log('Script finished after: ' + (microtime() - self.upload_time_start).toFixed(4) + ' seconds');
+
+                self.releaseInterface(0);
+            }
     }
 };
 
