@@ -1,6 +1,4 @@
 function request_firmware(callback) {
-    GUI.log('<strong>Requesting</strong> firmware');
-
     var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?';
     var firmware = $('select#firmware').val();
     var release = $('select#release').val();
@@ -17,32 +15,41 @@ function request_firmware(callback) {
         url = host + 'GITVERSION=' + release + '&BOARD=' + firmware + '.hex' + '&' + $.param(params);
     }
 
-    console.log('Requesting - ' + url);
+    if (url != ihex.last_requested_url) {
+        GUI.log('<strong>Requesting</strong> firmware');
+        console.log('Requesting - ' + url);
 
-    $.get(url, function(data) {
-        if (data.indexOf('ERROR') == -1) {
-            GUI.log('Firmware <span style="color: green">received</span>');
+        $.get(url, function(data) {
+            if (data.indexOf('ERROR') == -1) {
+                GUI.log('Firmware <span style="color: green">received</span>');
 
-            ihex.raw = data;
+                ihex.last_requested_url = url;
+                ihex.raw = data;
 
-            // parsing hex in different thread
-            var worker = new Worker('./js/workers/hex_parser.js');
+                // parsing hex in different thread
+                var worker = new Worker('./js/workers/hex_parser.js');
 
-            // "callback"
-            worker.onmessage = function (event) {
-                ihex.parsed = event.data;
+                // "callback"
+                worker.onmessage = function (event) {
+                    ihex.parsed = event.data;
 
-                if (callback) callback(ihex.raw, ihex.parsed);
-            };
+                    if (callback) callback(ihex.raw, ihex.parsed);
+                };
 
-            // send data/string over for processing
-            worker.postMessage(data);
-        } else {
-            GUI.log('Compile Server - <span style="color: red">Error</span>: ' + data.slice(6));
-        }
-    }).fail(function() {
-        GUI.log('<span style="color: red">Failed</span> to contact compile server');
-    });
+                // send data/string over for processing
+                worker.postMessage(data);
+            } else {
+                GUI.log('Compile Server - <span style="color: red">Error</span>: ' + data.slice(6));
+            }
+        }).fail(function() {
+            GUI.log('<span style="color: red">Failed</span> to contact compile server');
+        });
+    } else {
+        GUI.log('Using <span style="color: green">cached</span> copy of the firmware');
+        console.log('Using cached copy of the firmware as parameters are the same');
+
+        if (callback) callback(ihex.raw, ihex.parsed);
+    }
 }
 
 function request_releases(callback) {

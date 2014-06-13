@@ -1,6 +1,7 @@
 var ihex = {
-    raw:    undefined,
-    parsed: undefined,
+    raw:                undefined,
+    parsed:             undefined,
+    last_requested_url: null
 };
 
 var properties = [];
