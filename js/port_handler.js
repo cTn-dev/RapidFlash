@@ -109,7 +109,13 @@ port_handler.prototype.check = function() {
             self.initial_ports = current_ports;
         }
 
-        check_usb_devices();
+        if (GUI.optional_usb_permissions) {
+            check_usb_devices();
+        }
+
+        self.main_timeout_reference = setTimeout(function() {
+            self.check();
+        }, 250);
     });
 
     function check_usb_devices() {
@@ -125,10 +131,6 @@ port_handler.prototype.check = function() {
                 }
             }
         });
-
-        self.main_timeout_reference = setTimeout(function() {
-            self.check();
-        }, 250);
     }
 };
 
