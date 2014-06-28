@@ -168,6 +168,7 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
     var available_flash_size = 0;
 
     switch (signature) {
+        /*
         case 0x1E9514: // testing only
             console.log('Chip recognized as 328');
 
@@ -182,6 +183,7 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
             self.maximum_transmission_size = 128;
             available_flash_size = 32768;
             break;
+        */
         case 0x1E9307:
             console.log('Chip recognized as 8A');
 
