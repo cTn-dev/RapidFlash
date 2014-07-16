@@ -57,7 +57,7 @@ function tab_initialize_advanced() {
 
     $('#content').load("./tabs/advanced.html", function() {
         GUI.active_tab = 'advanced';
-        ga_tracker.sendAppView('Advanced');
+        googleAnalytics.sendAppView('Advanced');
 
         generate_ui([
             'MOTOR_REVERSE',

@@ -39,7 +39,7 @@ function tab_initialize_basic() {
 
     $('#content').load("./tabs/basic.html", function() {
         GUI.active_tab = 'basic';
-        ga_tracker.sendAppView('Basic');
+        googleAnalytics.sendAppView('Basic');
 
         generate_ui([
             'MOTOR_REVERSE',
