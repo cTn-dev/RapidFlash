@@ -186,6 +186,7 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
         */
         case 0x1E9307:
             console.log('Chip recognized as 8A');
+            GUI.log('Chip recognized as <strong>ATmega8 / ATmega8A</strong>');
 
             self.fuse_count = 2;
             self.maximum_transmission_size = 64;
@@ -202,6 +203,7 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
     }
 
     console.log('Chip not supported, sorry :-(');
+    GUI.log('Chip unsupported, sorry :-(');
 
     return false;
 };
@@ -239,10 +241,14 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                         self.upload_procedure(8);
                     }
                 } else if (data[0] == 1) {
-                    console.log('Programming target not found');
+                    console.log('Target not found');
+                    GUI.log('Target not found');
+
                     self.upload_procedure(99);
                 } else {
                     console.log('Enabling programming mode failed');
+                    GUI.log('Enabling programming mode failed');
+
                     self.upload_procedure(99);
                 }
             });
@@ -309,6 +315,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                         if (high_fuse != null && (high_fuse & 0x0F) != 0x0A) {
                             console.log('High fuse incompatible with bootloader, adjusting...');
+                            GUI.log('High fuse incompatible with bootloader, adjusting...');
 
                             // WATCH OUT !!! modifying upper 4 bits can brick the chip
                             high_fuse = (high_fuse & 0xF0) | 0x0A;
@@ -357,6 +364,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
         case 7:
             // chip erase
             console.log('Executing global chip erase');
+            GUI.log('Executing global chip erase');
 
             self.controlTransfer('in', self.func.TRANSMIT, 0x80AC, 0, 4, 0, function(data) {
                 self.chip_erased = true;
@@ -366,6 +374,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
         case 8:
             // write
             console.log('Writing data ...');
+            GUI.log('Writing ...');
 
             var blocks = self.hex.data.length - 1;
             var flashing_block = 0;
@@ -411,6 +420,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
         case 9:
             // verify
             console.log('Verifying data ...');
+            GUI.log('Verifying ...');
 
             var blocks = self.hex.data.length - 1;
             var reading_block = 0;
@@ -460,8 +470,12 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
 
                         if (verify) {
                             console.log('Programming: SUCCESSFUL');
+                            GUI.log('Verifying <span style="color: green">done</span>');
+                            GUI.log('Programming: <span style="color: green;">SUCCESSFUL</span>');
                         } else {
                             console.log('Programming: FAILED');
+                            GUI.log('Verifying <span style="color: red">failed</span>');
+                            GUI.log('Programming: <span style="color: red;">FAILED</span>');
                         }
 
                         self.upload_procedure(99);
