@@ -3,8 +3,6 @@ function tab_initialize_welcome() {
         GUI.active_tab = 'welcome';
         googleAnalytics.sendAppView('Welcome');
 
-        check_usb_permissions();
-
         // translate to user-selected language
         localize();
 

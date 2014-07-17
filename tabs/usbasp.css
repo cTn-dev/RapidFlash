@@ -1,0 +1,24 @@
+.tab-usbasp .optional_permissions {
+    display: none;
+}
+    .tab-usbasp .optional_permissions p {
+        padding: 5px;
+        text-align: center;
+    }
+    .tab-usbasp .optional_permissions a {
+        display: block;
+        margin: auto auto;
+
+        width: 200px;
+        height: 28px;
+        line-height: 28px;
+
+        text-align: center;
+        font-weight: bold;
+
+        border: 1px solid silver;
+        background-color: #ececec;
+    }
+    .tab-usbasp .optional_permissions a:hover {
+        background-color: #dedcdc;
+    }

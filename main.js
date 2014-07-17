@@ -17,6 +17,7 @@ $(document).ready(function() {
     googleAnalytics.sendAppView('Application Started');
 
     PortHandler.initialize();
+    check_usb_permissions();
 
     // alternative - window.navigator.appVersion.match(/Chrome\/([0-9.]*)/)[1];
     GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' +
@@ -143,6 +144,9 @@ $(document).ready(function() {
                     break;
                 case 'tab_advanced':
                     tab_initialize_advanced();
+                    break;
+                case 'tab_usbasp':
+                    tab_initialize_usbasp();
                     break;
             }
         }
