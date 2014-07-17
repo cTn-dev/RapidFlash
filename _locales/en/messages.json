@@ -23,13 +23,13 @@
         "message": "Optional <strong>USB</strong> permissions <strong style=\"color: green\">granted</strong>"
     },
 
-    "welcome_optional_permissions_head": {
+    "optional_permissions_head": {
         "message": "Optional USB Permissions"
     },
-    "welcome_optional_permissions_text": {
-        "message": "Due to addition of <strong>USBasp</strong> to supported programmers, RapidFlash <strong style=\"color: red\">requires</strong> USB access"
+    "optional_permissions_text": {
+        "message": "RapidFlash <strong style=\"color: red\">requires</strong> USB access to detect and work with USBasp"
     },
-    "welcome_request_optional_permissions": {
+    "optional_permissions": {
         "message": "Request Optional Permissions"
     }
 }

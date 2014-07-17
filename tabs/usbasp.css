@@ -1,5 +1,6 @@
 .tab-usbasp .optional_permissions {
     display: none;
+    margin-bottom: 10px;
 }
     .tab-usbasp .optional_permissions p {
         padding: 5px;
@@ -7,7 +8,7 @@
     }
     .tab-usbasp .optional_permissions a {
         display: block;
-        margin: auto auto;
+        margin: auto;
 
         width: 200px;
         height: 28px;
@@ -21,4 +22,14 @@
     }
     .tab-usbasp .optional_permissions a:hover {
         background-color: #dedcdc;
+    }
+.tab-usbasp .info {
+    padding: 5px;
+    border: 1px dashed silver;
+}
+    .tab-usbasp .info a {
+        font-weight: bold;
+    }
+    .tab-usbasp .info a:hover {
+        text-decoration: underline;
     }
