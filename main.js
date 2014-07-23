@@ -309,6 +309,10 @@ $(document).ready(function() {
                 USBASP.connect(hex);
                 break;
         }
+
+        googleAnalytics.sendEvent('Flashing', 'Programmer', $('select#programmer').val());
+        googleAnalytics.sendEvent('Flashing', 'Release', $('select#release').val());
+        googleAnalytics.sendEvent('Flashing', 'Firmware', $('select#firmware').val());
     }
 
     $('a.flash').click(function() {
