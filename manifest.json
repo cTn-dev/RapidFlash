@@ -12,7 +12,8 @@
 
     "app": {
         "background": {
-            "scripts": [ "background.js" ]
+            "scripts": ["eventPage.js"],
+            "persistent": false
         }
     },
 
