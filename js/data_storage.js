@@ -1,3 +1,5 @@
+'use strict';
+
 var ihex = {
     raw:                undefined,
     parsed:             undefined,

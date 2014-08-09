@@ -1,3 +1,5 @@
+'use strict';
+
 function request_firmware(callback) {
     var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?';
     var firmware = $('select#firmware').val();

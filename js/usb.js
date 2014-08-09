@@ -1,3 +1,5 @@
+'use strict';
+
 var usbDevices = {
     USBASP: {'vendorId': 5824, 'productId': 1500}
 };

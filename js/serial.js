@@ -1,3 +1,5 @@
+'use strict';
+
 var serial = {
     connectionId: -1,
     bytes_received: 0,
@@ -27,11 +29,11 @@ var serial = {
                         case 'system_error': // we might be able to recover from this one
                             chrome.serial.setPaused(self.connectionId, false, get_status);
 
-                            function get_status() {
+                            var get_status = function () {
                                 self.getInfo(crunch_status);
                             }
 
-                            function crunch_status(info) {
+                            var crunch_status = function (info) {
                                 if (!info.paused) {
                                     console.log('SERIAL: Connection recovered from last onReceiveError');
                                     googleAnalytics.sendException('Serial: onReceiveError - recovered', false);

@@ -1,5 +1,8 @@
+'use strict';
+
 // Get access to the background window object
 // This object is used to pass variables between active page and background page
+var backgroundPage;
 chrome.runtime.getBackgroundPage(function(result) {
     backgroundPage = result;
     backgroundPage.app_window = window;
@@ -222,7 +225,7 @@ $(document).ready(function() {
             if (release != '0') {
                 request_firmware(save);
 
-                function save() {
+                var save = function () {
                     chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function(fileEntry) {
                         if (!fileEntry) {
                             console.log('No valid file selected, aborting');

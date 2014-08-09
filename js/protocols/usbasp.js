@@ -6,6 +6,7 @@
 
     Descriptors seems to be broken in current chrome.usb API implementation (writing this while using canary 37.0.2040.0
 */
+'use strict';
 
 var USBasp_protocol = function() {
     this.hex; // ref
@@ -112,7 +113,7 @@ USBasp_protocol.prototype.resetDevice = function(callback) {
     });
 };
 
-USBasp_protocol.prototype.controlTransfer = function(direction, request, value, interface, length, data, callback) {
+USBasp_protocol.prototype.controlTransfer = function(direction, request, value, _interface, length, data, callback) {
     if (direction == 'in') {
         // data is ignored
         chrome.usb.controlTransfer(this.handle, {
@@ -121,7 +122,7 @@ USBasp_protocol.prototype.controlTransfer = function(direction, request, value, 
             'requestType':  'vendor',
             'request':      request,
             'value':        value,
-            'index':        interface,
+            'index':        _interface,
             'length':       length
         }, function(result) {
             if (result.resultCode) console.log(result.resultCode);
@@ -145,7 +146,7 @@ USBasp_protocol.prototype.controlTransfer = function(direction, request, value, 
             'requestType':  'vendor',
             'request':      request,
             'value':        value,
-            'index':        interface,
+            'index':        _interface,
             'data':         arrayBuf
         }, function(result) {
             if (result.resultCode) console.log(result.resultCode);
@@ -258,7 +259,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             var i = 0;
             var id = 0;
 
-            function get_chip_id() {
+            var get_chip_id = function () {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x30, i++, 4, 0, function(data) {
                     id |= data[3] << 8 * (3 - i);
 
@@ -283,7 +284,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             // low fuse
             var low_fuse = null;
 
-            function read_low_fuse() {
+            var read_low_fuse = function () {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0050, 0, 4, 0, function(data) {
                     if (data.length == 4) {
                         low_fuse = data[3];
@@ -306,7 +307,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             // high fuse
             var high_fuse = null;
 
-            function read_high_fuse() {
+            var read_high_fuse = function () {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0858, 0, 4, 0, function(data) {
                     if (data.length == 4) {
                         high_fuse = data[3];
@@ -342,7 +343,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             // extended fuse
             var extended_fuse = null;
 
-            function read_extended_fuse() {
+            var read_extended_fuse = function () {
                 self.controlTransfer('in', self.func.TRANSMIT, 0x0850, 0, 4, 0, function(data) {
                     if (data.length == 4) {
                         extended_fuse = data[3];
@@ -381,7 +382,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
             var address = self.hex.data[flashing_block].address;
             var bytes_flashed = 0;
 
-            function write_to_flash() {
+            var write_to_flash = function () {
                 if (bytes_flashed < self.hex.data[flashing_block].bytes) {
                     var bytes_to_write = ((bytes_flashed + self.maximum_transmission_size) <= self.hex.data[flashing_block].bytes) ? self.maximum_transmission_size : (self.hex.data[flashing_block].bytes - bytes_flashed);
                     var data_to_flash = self.hex.data[flashing_block].data.slice(bytes_flashed, bytes_flashed + bytes_to_write);
@@ -432,7 +433,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                 self.verify_hex.push([]);
             }
 
-            function read_from_flash() {
+            var read_from_flash = function () {
                 if (bytes_verified < self.hex.data[reading_block].bytes) {
                     var bytes_to_read = ((bytes_verified + self.maximum_transmission_size) <= self.hex.data[reading_block].bytes) ? self.maximum_transmission_size : (self.hex.data[reading_block].bytes - bytes_verified);
 

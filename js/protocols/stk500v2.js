@@ -6,6 +6,7 @@
     ATmega8  1e9307
     ATmega8A 1e9307
 */
+'use strict';
 
 var STK500v2_protocol = function() {
     this.hex; // ref
