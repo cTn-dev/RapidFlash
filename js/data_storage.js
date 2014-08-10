@@ -1,14 +1,14 @@
 'use strict';
 
-var ihex = {
+var IHEX = {
     raw:                undefined,
     parsed:             undefined,
     last_requested_url: null
 };
 
-var properties = [];
+var PROPERTIES = [];
 
-var firmware_type = [
+var FIRMWARE_TYPE = [
     'afro',
     'afro_hv',
     'afro_nfet',
@@ -40,7 +40,7 @@ var firmware_type = [
     'custom'
 ];
 
-var firmware_options = [
+var FIRMWARE_OPTIONS = [
     {
         name:           'CPU_MHZ',
         description:    '',

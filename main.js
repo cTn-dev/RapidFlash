@@ -29,8 +29,8 @@ $(document).ready(function () {
 
     // generate list of firmwares
     var e_firmware = $('select#firmware');
-    for (var i = 0; i < firmware_type.length; i++) {
-        e_firmware.append('<option value="' + firmware_type[i] + '">' + firmware_type[i] + '</option>');
+    for (var i = 0; i < FIRMWARE_TYPE.length; i++) {
+        e_firmware.append('<option value="' + FIRMWARE_TYPE[i] + '">' + FIRMWARE_TYPE[i] + '</option>');
     }
 
     // generate list of releases
@@ -165,9 +165,9 @@ $(document).ready(function () {
                 return;
             }
 
-            // reset default ihex properties
-            ihex.raw = false;
-            ihex.parsed = false;
+            // reset
+            IHEX.raw = false;
+            IHEX.parsed = false;
 
             chrome.fileSystem.getDisplayPath(fileEntry, function (path) {
                 console.log('Loading file from: ' + path);
@@ -194,7 +194,7 @@ $(document).ready(function () {
                             // "callback"
                             worker.onmessage = function (ev) {
                                 if (ev.data) {
-                                    ihex.parsed = ev.data;
+                                    IHEX.parsed = ev.data;
 
                                     GUI.log('Custom HEX file <span style="color: green">loaded</span>');
                                     $('select#firmware').val('custom').change();
@@ -204,7 +204,7 @@ $(document).ready(function () {
                             };
 
                             // save raw data structure
-                            ihex.raw = e.target.result;
+                            IHEX.raw = e.target.result;
 
                             // send data/string over for processing
                             worker.postMessage(e.target.result);
@@ -241,7 +241,7 @@ $(document).ready(function () {
                                 // check if file is writable
                                 chrome.fileSystem.isWritableEntry(fileEntryWritable, function (isWritable) {
                                     if (isWritable) {
-                                        var blob = new Blob([ihex.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
+                                        var blob = new Blob([IHEX.raw], {type: 'text/plain'}); // first parameter for Blob needs to be an array
 
                                         fileEntryWritable.createWriter(function (writer) {
                                             writer.onerror = function (e) {
@@ -284,7 +284,7 @@ $(document).ready(function () {
     });
 
     $('a.reset').click(function () {
-        properties = [];
+        PROPERTIES = [];
 
         switch (GUI.active_tab) {
             case 'basic':
@@ -339,14 +339,14 @@ $(document).ready(function () {
                                 GUI.log('Please select release');
                             }
                         } else {
-                            if (ihex.parsed) {
+                            if (IHEX.parsed) {
                                 // save some of the settings for next use
                                 chrome.storage.local.set({'last_used_port': $('select#port').val()});
                                 chrome.storage.local.set({'programmer': $('select#programmer').val()});
                                 chrome.storage.local.set({'firmware': 0});
 
                                 // custom firmware
-                                begin_upload(ihex.parsed);
+                                begin_upload(IHEX.parsed);
                             } else {
                                 GUI.log('Please load valid firmware first');
                             }

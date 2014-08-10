@@ -46,11 +46,11 @@ function tab_initialize_advanced() {
             }
         }
 
-        for (var i = 0; i < properties.length; i++) {
-            if (properties[i][2] == 'checkbox') {
-                $('.tab-advanced input[name="' + properties[i][0] + '"]').prop('checked', properties[i][1]);
-            } else if (properties[i][2] == 'number') {
-                $('.tab-advanced input[name="' + properties[i][0] + '"]').val(properties[i][1]);
+        for (var i = 0; i < PROPERTIES.length; i++) {
+            if (PROPERTIES[i][2] == 'checkbox') {
+                $('.tab-advanced input[name="' + PROPERTIES[i][0] + '"]').prop('checked', PROPERTIES[i][1]);
+            } else if (PROPERTIES[i][2] == 'number') {
+                $('.tab-advanced input[name="' + PROPERTIES[i][0] + '"]').val(PROPERTIES[i][1]);
             }
         }
     }
@@ -105,15 +105,15 @@ function tab_initialize_advanced() {
                 var val = element.val();
             }
 
-            for (var i = 0; i < properties.length; i++) {
-                if (properties[i][0] == name) {
-                    properties[i][1] = val;
+            for (var i = 0; i < PROPERTIES.length; i++) {
+                if (PROPERTIES[i][0] == name) {
+                    PROPERTIES[i][1] = val;
 
                     return;
                 }
             }
 
-            properties.push([name, val, type]);
+            PROPERTIES.push([name, val, type]);
         });
     });
 }

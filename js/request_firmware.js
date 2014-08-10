@@ -6,8 +6,8 @@ function request_firmware(callback) {
     var release = $('select#release').val();
 
     var params = {};
-    for (var i = 0; i < properties.length; i++) {
-        params[properties[i][0]] = properties[i][1];
+    for (var i = 0; i < PROPERTIES.length; i++) {
+        params[PROPERTIES[i][0]] = PROPERTIES[i][1];
     }
 
     var url;
@@ -17,7 +17,7 @@ function request_firmware(callback) {
         url = host + 'GITVERSION=' + release + '&BOARD=' + firmware + '.hex' + '&' + $.param(params);
     }
 
-    if (url != ihex.last_requested_url) {
+    if (url != IHEX.last_requested_url) {
         GUI.log('<strong>Requesting</strong> firmware');
         console.log('Requesting - ' + url);
 
@@ -25,17 +25,17 @@ function request_firmware(callback) {
             if (data.indexOf('ERROR') == -1) {
                 GUI.log('Firmware <span style="color: green">received</span>');
 
-                ihex.last_requested_url = url;
-                ihex.raw = data;
+                IHEX.last_requested_url = url;
+                IHEX.raw = data;
 
                 // parsing hex in different thread
                 var worker = new Worker('./js/workers/hex_parser.js');
 
                 // "callback"
                 worker.onmessage = function (event) {
-                    ihex.parsed = event.data;
+                    IHEX.parsed = event.data;
 
-                    if (callback) callback(ihex.raw, ihex.parsed);
+                    if (callback) callback(IHEX.raw, IHEX.parsed);
                 };
 
                 // send data/string over for processing
@@ -50,7 +50,7 @@ function request_firmware(callback) {
         GUI.log('Using <span style="color: green">cached</span> copy of the firmware');
         console.log('Using cached copy of the firmware as parameters are the same');
 
-        if (callback) callback(ihex.raw, ihex.parsed);
+        if (callback) callback(IHEX.raw, IHEX.parsed);
     }
 }
 
