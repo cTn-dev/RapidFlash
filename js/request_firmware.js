@@ -1,9 +1,9 @@
 'use strict';
 
 function request_firmware(callback) {
-    var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?';
-    var firmware = $('select#firmware').val();
-    var release = $('select#release').val();
+    var host = 'http://www.openlrsng.org/cgi-bin/tgy/gethex.cgi?',
+        firmware = $('select#firmware').val(),
+        release = $('select#release').val();
 
     var params = {};
     for (var i = 0; i < PROPERTIES.length; i++) {

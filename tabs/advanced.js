@@ -7,15 +7,15 @@ function tab_initialize_advanced() {
         }
 
         for (var i = 0; i < items.length; i++) {
-            for (var j = 0; j < firmware_options.length; j++) {
-                if (items[i] == firmware_options[j].name) {
-                    switch (firmware_options[j].element) {
+            for (var j = 0; j < FIRMWARE_OPTIONS.length; j++) {
+                if (items[i] == FIRMWARE_OPTIONS[j].name) {
+                    switch (FIRMWARE_OPTIONS[j].element) {
                         case 'checkbox':
                             var div = '<div class="checkbox">\
                                 <label>\
-                                <div><input type="checkbox" name="' + firmware_options[j].name + '" id="' + firmware_options[j].name + '" ' + checked(firmware_options[j].default) + ' /></div>\
-                                <div>[' + firmware_options[j].name + ']</div>\
-                                <div>' + firmware_options[j].description + '</div>\
+                                <div><input type="checkbox" name="' + FIRMWARE_OPTIONS[j].name + '" id="' + FIRMWARE_OPTIONS[j].name + '" ' + checked(FIRMWARE_OPTIONS[j].default) + ' /></div>\
+                                <div>[' + FIRMWARE_OPTIONS[j].name + ']</div>\
+                                <div>' + FIRMWARE_OPTIONS[j].description + '</div>\
                                 </label>\
                                 </div>';
 
@@ -26,14 +26,14 @@ function tab_initialize_advanced() {
                                 <label>\
                                 <div>\
                                     <input type="number"\
-                                       name="' + firmware_options[j].name + '" \
-                                       id="' + firmware_options[j].name + '" \
-                                       value="' + firmware_options[j].default + '" \
-                                       min="' + firmware_options[j].min + '" \
-                                       max="' + firmware_options[j].max + '" \/>\
+                                       name="' + FIRMWARE_OPTIONS[j].name + '" \
+                                       id="' + FIRMWARE_OPTIONS[j].name + '" \
+                                       value="' + FIRMWARE_OPTIONS[j].default + '" \
+                                       min="' + FIRMWARE_OPTIONS[j].min + '" \
+                                       max="' + FIRMWARE_OPTIONS[j].max + '" \/>\
                                 </div>\
-                                <div>[' + firmware_options[j].name + ']</div>\
-                                <div>' + firmware_options[j].description + '</div>\
+                                <div>[' + FIRMWARE_OPTIONS[j].name + ']</div>\
+                                <div>' + FIRMWARE_OPTIONS[j].description + '</div>\
                                 </label>\
                                 </div>';
 
