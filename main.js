@@ -223,8 +223,6 @@ $(document).ready(function () {
 
         if (name != '0' && name != 'custom') {
             if (release != '0') {
-                request_firmware(save);
-
                 var save = function () {
                     chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: name, accepts: [{extensions: ['hex']}]}, function (fileEntry) {
                         if (!fileEntry) {
@@ -274,7 +272,9 @@ $(document).ready(function () {
                             });
                         });
                     });
-                }
+                };
+
+                request_firmware(save);
             } else {
                 GUI.log('Please select release');
             }
