@@ -322,7 +322,7 @@ $(document).ready(function () {
         if (!GUI.connect_lock) {
             if ($('select#programmer').val() != '0') {
                 if ($('select#firmware').val() != '0') {
-                    if ($('select#port').val() != '0' && $('select#port').val() != 'usbasp') {
+                    if ($('select#port').val() != '0') {
                         if ($('select#firmware').val() != 'custom') {
                             if ($('select#release').val() != '0') {
                                 // save some of the settings for next use
