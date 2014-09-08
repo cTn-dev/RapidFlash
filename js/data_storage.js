@@ -24,6 +24,8 @@ var FIRMWARE_TYPE = [
     'hk200a',
     'hm135a',
     'kda',
+    'kda_8khz',
+    'kda_nfet',
     'mkblctrl1',
     'rb50a',
     'rb70a',
