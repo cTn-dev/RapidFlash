@@ -8,11 +8,11 @@ var serial = {
     transmitting: false,
     output_buffer: [],
 
-    connect: function(path, options, callback) {
+    connect: function (path, options, callback) {
         var self = this;
 
-        chrome.serial.connect(path, options, function(connectionInfo) {
-            if (connectionInfo !== undefined) {
+        chrome.serial.connect(path, options, function (connectionInfo) {
+            if (connectionInfo) {
                 self.connectionId = connectionInfo.connectionId;
                 self.bytes_received = 0;
                 self.bytes_sent = 0;
@@ -73,7 +73,7 @@ var serial = {
             }
         });
     },
-    disconnect: function(callback) {
+    disconnect: function (callback) {
         var self = this;
 
         self.empty_output_buffer();
@@ -102,38 +102,38 @@ var serial = {
             if (callback) callback(result);
         });
     },
-    getDevices: function(callback) {
-        chrome.serial.getDevices(function(devices_array) {
+    getDevices: function (callback) {
+        chrome.serial.getDevices(function (devices_array) {
             var devices = [];
-            devices_array.forEach(function(device) {
+            devices_array.forEach(function (device) {
                 devices.push(device.path);
             });
 
             callback(devices);
         });
     },
-    getInfo: function(callback) {
+    getInfo: function (callback) {
         chrome.serial.getInfo(this.connectionId, callback);
     },
-    getControlSignals: function(callback) {
+    getControlSignals: function (callback) {
         chrome.serial.getControlSignals(this.connectionId, callback);
     },
-    setControlSignals: function(signals, callback) {
+    setControlSignals: function (signals, callback) {
         chrome.serial.setControlSignals(this.connectionId, signals, callback);
     },
-    send: function(data, callback) {
+    send: function (data, callback) {
         var self = this;
         self.output_buffer.push({'data': data, 'callback': callback});
 
         if (!self.transmitting) {
             self.transmitting = true;
 
-            var sending = function() {
+            var sending = function () {
                 // store inside separate variables in case array gets destroyed
                 var data = self.output_buffer[0].data;
                 var callback = self.output_buffer[0].callback;
 
-                chrome.serial.send(self.connectionId, data, function(sendInfo) {
+                chrome.serial.send(self.connectionId, data, function (sendInfo) {
                     callback(sendInfo);
                     self.output_buffer.shift();
 
@@ -158,12 +158,11 @@ var serial = {
     onReceive: {
         listeners: [],
 
-        addListener: function(function_reference) {
-            var listener = chrome.serial.onReceive.addListener(function_reference);
-
+        addListener: function (function_reference) {
+            chrome.serial.onReceive.addListener(function_reference);
             this.listeners.push(function_reference);
         },
-        removeListener: function(function_reference) {
+        removeListener: function (function_reference) {
             for (var i = (this.listeners.length - 1); i >= 0; i--) {
                 if (this.listeners[i] == function_reference) {
                     chrome.serial.onReceive.removeListener(function_reference);
@@ -177,12 +176,11 @@ var serial = {
     onReceiveError: {
         listeners: [],
 
-        addListener: function(function_reference) {
-            var listener = chrome.serial.onReceiveError.addListener(function_reference);
-
+        addListener: function (function_reference) {
+            chrome.serial.onReceiveError.addListener(function_reference);
             this.listeners.push(function_reference);
         },
-        removeListener: function(function_reference) {
+        removeListener: function (function_reference) {
             for (var i = (this.listeners.length - 1); i >= 0; i--) {
                 if (this.listeners[i] == function_reference) {
                     chrome.serial.onReceiveError.removeListener(function_reference);
@@ -193,7 +191,7 @@ var serial = {
             }
         }
     },
-    empty_output_buffer: function() {
+    empty_output_buffer: function () {
         this.output_buffer = [];
         this.transmitting = false;
     }
