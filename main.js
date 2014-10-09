@@ -17,8 +17,6 @@ googleAnalyticsService.getConfig().addCallback(function (config) {
 });
 
 $(document).ready(function () {
-    googleAnalytics.sendAppView('Application Started');
-
     PortHandler.initialize();
     check_usb_permissions();
 
@@ -26,6 +24,9 @@ $(document).ready(function () {
     GUI.log('Running - OS: <strong>' + GUI.operating_system + '</strong>, ' +
         'Chrome: <strong>' + window.navigator.appVersion.replace(/.*Chrome\/([0-9.]*).*/,"$1") + '</strong>, ' +
         chrome.runtime.getManifest().name + ': <strong>' + chrome.runtime.getManifest().version + '</strong>');
+
+    // log library versions in console to make version tracking easier
+    console.log('Libraries: jQuery - ' + $.fn.jquery);
 
     // generate list of firmwares
     var e_firmware = $('select#firmware');
