@@ -38,8 +38,10 @@ function tab_initialize_basic() {
     }
 
     $('#content').load("./tabs/basic.html", function() {
-        GUI.active_tab = 'basic';
-        googleAnalytics.sendAppView('Basic');
+        if (GUI.active_tab != 'basic') {
+            GUI.active_tab = 'basic';
+            googleAnalytics.sendAppView('Basic');
+        }
 
         generate_ui([
             'MOTOR_REVERSE',

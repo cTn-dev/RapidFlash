@@ -1,7 +1,9 @@
 function tab_initialize_usbasp() {
     $('#content').load("./tabs/usbasp.html", function() {
-        GUI.active_tab = 'usbasp';
-        googleAnalytics.sendAppView('USBASP');
+        if (GUI.active_tab != 'usbasp') {
+            GUI.active_tab = 'usbasp';
+            googleAnalytics.sendAppView('USBASP');
+        }
 
         if (!GUI.optional_usb_permissions) {
             GUI.log(chrome.i18n.getMessage('please_grant_usb_permissions'));

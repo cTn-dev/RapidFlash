@@ -1,7 +1,9 @@
 function tab_initialize_welcome() {
     $('#content').load("./tabs/welcome.html", function() {
-        GUI.active_tab = 'welcome';
-        googleAnalytics.sendAppView('Welcome');
+        if (GUI.active_tab != 'welcome') {
+            GUI.active_tab = 'welcome';
+            googleAnalytics.sendAppView('Welcome');
+        }
 
         // translate to user-selected language
         localize();

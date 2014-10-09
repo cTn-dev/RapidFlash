@@ -56,8 +56,10 @@ function tab_initialize_advanced() {
     }
 
     $('#content').load("./tabs/advanced.html", function() {
-        GUI.active_tab = 'advanced';
-        googleAnalytics.sendAppView('Advanced');
+        if (GUI.active_tab != 'advanced') {
+            GUI.active_tab = 'advanced';
+            googleAnalytics.sendAppView('Advanced');
+        }
 
         generate_ui([
             'MOTOR_REVERSE',
