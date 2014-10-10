@@ -3,7 +3,7 @@
 */
 'use strict';
 
-function start_app() {
+function startApplication() {
     chrome.app.window.create('main.html', {
         id: 'main-window',
         frame: 'chrome',
@@ -11,8 +11,8 @@ function start_app() {
             minWidth: 740,
             minHeight: 420
         }
-    }, function(main_window) {
-        main_window.onClosed.addListener(function() {
+    }, function (main_window) {
+        main_window.onClosed.addListener(function () {
             // connectionId is passed from the script side through the chrome.runtime.getBackgroundPage refference
             // allowing us to automatically close the port when application shut down
 
@@ -20,8 +20,8 @@ function start_app() {
             var connectionId = app_window.serial.connectionId;
 
             if (connectionId > 0) {
-                setTimeout(function() {
-                    chrome.serial.disconnect(connectionId, function(result) {
+                setTimeout(function () {
+                    chrome.serial.disconnect(connectionId, function (result) {
                         console.log('SERIAL: Connection closed - ' + result);
                     });
                 }, 50);
@@ -30,9 +30,7 @@ function start_app() {
     });
 }
 
-chrome.app.runtime.onLaunched.addListener(function() {
-    start_app();
-});
+chrome.app.runtime.onLaunched.addListener(startApplication);
 
 chrome.runtime.onInstalled.addListener(function(details) {
     if (details.reason == 'update') {
@@ -41,7 +39,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
         // only fire up notification sequence when one of the major version numbers changed
         if (currentVersionArr[0] > previousVersionArr[0] || currentVersionArr[1] > previousVersionArr[1]) {
-            chrome.storage.local.get('update_notify', function(result) {
+            chrome.storage.local.get('update_notify', function (result) {
                 if (typeof result.update_notify === 'undefined' || result.update_notify) {
                     var manifest = chrome.runtime.getManifest();
                     var options = {
@@ -53,7 +51,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
                         buttons: [{'title': chrome.i18n.getMessage('notifications_click_here_to_start_app')}]
                     };
 
-                    chrome.notifications.create('rapidflash_update', options, function(notificationId) {
+                    chrome.notifications.create('rapidflash_update', options, function (notificationId) {
                         // empty
                     });
                 }
@@ -62,8 +60,8 @@ chrome.runtime.onInstalled.addListener(function(details) {
     }
 });
 
-chrome.notifications.onButtonClicked.addListener(function(notificationId, buttonIndex) {
+chrome.notifications.onButtonClicked.addListener(function (notificationId, buttonIndex) {
     if (notificationId == 'rapidflash_update') {
-        start_app();
+        startApplication();
     }
 });
