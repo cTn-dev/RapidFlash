@@ -129,14 +129,12 @@ var serial = {
         var self = this;
         this.output_buffer.push({'data': data, 'callback': callback});
 
-        if (!this.transmitting) {
-            this.transmitting = true;
+        function send () {
+            // store inside separate variables in case array gets destroyed
+            var data = self.output_buffer[0].data,
+                callback = self.output_buffer[0].callback;
 
-            var send = function () {
-                // store inside separate variables in case array gets destroyed
-                var data = self.output_buffer[0].data,
-                    callback = self.output_buffer[0].callback;
-
+            if (self.connectionId) {
                 chrome.serial.send(self.connectionId, data, function (sendInfo) {
                     // track sent bytes for statistics
                     self.bytes_sent += sendInfo.bytesSent;
@@ -166,8 +164,11 @@ var serial = {
                         self.transmitting = false;
                     }
                 });
-            };
+            }
+        };
 
+        if (!self.transmitting) {
+            self.transmitting = true;
             send();
         }
     },
