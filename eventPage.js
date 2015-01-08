@@ -11,13 +11,13 @@ function startApplication() {
             minWidth: 740,
             minHeight: 420
         }
-    }, function (main_window) {
-        main_window.onClosed.addListener(function () {
-            // connectionId is passed from the script side through the chrome.runtime.getBackgroundPage refference
+    }, function (createdWindow) {
+        createdWindow.onClosed.addListener(function () {
+            // connectionId is passed from the script side through the contentWindow refference
             // allowing us to automatically close the port when application shut down
 
-            // save connectionId in separate variable before app_window is destroyed
-            var connectionId = app_window.serial.connectionId;
+            // save connectionId in separate variable before main window is destroyed
+            var connectionId = createdWindow.contentWindow.serial.connectionId;
 
             if (connectionId > 0) {
                 setTimeout(function () {
