@@ -1,80 +1,63 @@
 .tab-welcome .text {
     float: left;
-
     width: 58%;
-    height: 131px;
-
+    height: 195px;
     padding: 5px;
-
     border: 1px solid silver;
 }
-    .tab-welcome .text a {
-        font-weight: bold;
-    }
-    .tab-welcome .text a:hover {
-        text-decoration: underline;
-    }
+.tab-welcome .text a {
+    font-weight: bold;
+}
+.tab-welcome .text a:hover {
+    text-decoration: underline;
+}
 .tab-welcome .changelog {
     float: right;
-
-    margin-bottom: 5px;
-
     width: calc(42% - 20px);
-
     border: 1px solid silver;
 }
-    .tab-welcome .changelog .title {
-        line-height: 20px;
-
-        text-align: center;
-        font-weight: bold;
-        color: white;
-
-        border-bottom: 1px solid silver;
-        background-color: #3f4241;
-    }
-    .tab-welcome .changelog .wrapper {
-        height: 110px;
-
-        padding: 5px;
-
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        -webkit-user-select: text;
-    }
-        .tab-welcome .changelog .wrapper span {
-            font-weight: bold;
-        }
-        .tab-welcome .changelog .wrapper p {
-            margin-bottom: 5px;
-        }
+.tab-welcome .changelog .title {
+    line-height: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    border-bottom: 1px solid silver;
+    background-color: #3f4241;
+}
+.tab-welcome .changelog .wrapper {
+    height: 174px;
+    padding: 5px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -webkit-user-select: text;
+}
+.tab-welcome .changelog .wrapper span {
+    font-weight: bold;
+}
+.tab-welcome .changelog .wrapper p {
+    margin-bottom: 5px;
+}
 .tab-welcome .donate {
     height: 84px;
-
+    margin: 5px 0 0 0;
     padding: 0 0 5px 0;
-
     border: 1px solid silver;
     background-color: white;
 }
-    .tab-welcome .donate .title {
-        line-height: 20px;
-
-        text-align: center;
-        font-weight: bold;
-        color: white;
-
-        border-bottom: 1px solid silver;
-        background-color: #3f4241;
-    }
-    .tab-welcome .donate p {
-        padding: 5px;
-    }
-    .tab-welcome .donate a {
-        display: block;
-
-        width: 74px;
-        height: 21px;
-
-        margin: auto;
-    }
+.tab-welcome .donate .title {
+    line-height: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    border-bottom: 1px solid silver;
+    background-color: #3f4241;
+}
+.tab-welcome .donate p {
+    padding: 5px;
+}
+.tab-welcome .donate a {
+    display: block;
+    width: 74px;
+    height: 21px;
+    margin: auto;
+}
