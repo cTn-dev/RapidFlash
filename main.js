@@ -255,8 +255,7 @@ $(document).ready(function () {
                                                     return;
                                                 }
 
-                                                // all went fine
-                                                callback(true);
+                                                // all went fine, add callback here if needed
                                             };
 
                                             writer.write(blob);

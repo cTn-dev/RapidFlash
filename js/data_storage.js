@@ -26,6 +26,7 @@ var FIRMWARE_TYPE = [
     'kda',
     'kda_8khz',
     'kda_nfet',
+    'kda_nfet_ni',
     'mkblctrl1',
     'rb50a',
     'rb70a',
