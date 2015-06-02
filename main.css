@@ -40,174 +40,143 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 #controls {
     float: left;
-
     height: 22px;
-
     margin-bottom: 3px;
 }
-    #controls select {
-        height: 20px;
-        line-height: 20px;
-
-        border: 1px solid silver;
-    }
-    #controls #port {
-        width: 140px;
-    }
-    #controls #programmer {
-        width: 150px;
-    }
-    #controls #firmware {
-        width: 120px;
-    }
-    #controls #release {
-        width: 120px;
-    }
+#controls select {
+    height: 20px;
+    line-height: 20px;
+    border: 1px solid silver;
+}
+#controls #port {
+    width: 140px;
+}
+#controls #programmer {
+    width: 150px;
+}
+#controls #firmware {
+    width: 120px;
+}
+#controls #release {
+    width: 120px;
+}
 #app_options {
     float: right;
-
     width: 20px;
     height: 20px;
-
     background-image: url('./images/ic_settings_24px.svg');
     background-position: -1px -1px;
     background-repeat: no-repeat;
-
     opacity: 0.6;
 }
-    #app_options:hover {
-        opacity: 0.70;
-    }
-    #app_options.active {
-        opacity: 0.70;
-    }
-    #app_options.active:hover {
-        opacity: 0.85;
-    }
+#app_options:hover {
+    opacity: 0.70;
+}
+#app_options.active {
+    opacity: 0.70;
+}
+#app_options.active:hover {
+    opacity: 0.85;
+}
 #app_options-window {
     display: none;
     position: fixed;
-
     right: 5px;
     top: 30px;
-
     padding: 5px;
-
     line-height: 20px;
-
     border: 1px solid silver;
     background-color: white;
 }
-    #app_options-window input {
-        float: left;
-
-        margin-top: 3px;
-        margin-right: 5px;
-    }
+#app_options-window input {
+    float: left;
+    margin-top: 3px;
+    margin-right: 5px;
+}
 #log {
     margin-bottom: 5px;
-
     height: 60px;
-
     border: 1px solid silver;
     background-color: white;
 
     overflow-y: scroll;
 }
-    #log .wrapper {
-        padding: 5px;
-
-        -webkit-user-select: text;
-    }
+#log .wrapper {
+    padding: 5px;
+    -webkit-user-select: text;
+}
 #tabs {
     position: absolute;
     margin-top: 1px;
 }
-    #tabs li {
-        float: left;
-        margin-right: 5px;
-
-        border: 1px solid #848484;
-        border-bottom: 0;
-    }
-        #tabs li.active {
-        }
-            #tabs li.active a {
-                height: 16px;
-
-                background-color: white;
-            }
-            #tabs li.active a:hover {
-                background-color: white;
-                cursor: default;
-            }
-        #tabs li a {
-            display: block;
-
-            height: 15px;
-
-            padding: 5px 12px 5px 12px;
-
-            font-weight: bold;
-            color: #303030;
-
-            background-color: #d0d0d0;
-        }
-        #tabs li a:hover {
-            background-color: #acacac;
-        }
-#content {
-    margin-top: 32px;
-
-    height: calc(100% - 170px); /* - (port picker, log, tab) */
-
-    padding: 5px;
+#tabs li {
+    float: left;
+    margin-right: 5px;
 
     border: 1px solid #848484;
+    border-bottom: 0;
+}
+#tabs li.active {
+}
+#tabs li.active a {
+    height: 16px;
     background-color: white;
-
+}
+#tabs li.active a:hover {
+    background-color: white;
+    cursor: default;
+}
+#tabs li a {
+    display: block;
+    height: 15px;
+    padding: 5px 12px 5px 12px;
+    font-weight: bold;
+    color: #303030;
+    background-color: #d0d0d0;
+}
+#tabs li a:hover {
+    background-color: #acacac;
+}
+#content {
+    margin-top: 32px;
+    height: calc(100% - 170px); /* - (port picker, log, tab) */
+    padding: 5px;
+    border: 1px solid #848484;
+    background-color: white;
     overflow-y: auto;
     overflow-x: hidden;
 }
 .buttons {
     height: 28px;
-
     padding: 5px 5px 5px 5px;
-
     border: 1px solid #848484;
     border-top: 0;
     background-color: #f0f0f0;
 }
-    .buttons .load {
-        float: left;
-    }
-    .buttons .save {
-        float: left;
-
-        margin-left: 5px;
-    }
-    .buttons .flash {
-        float: right;
-    }
-    .buttons .reset {
-        float: right;
-
-        margin-right: 5px;
-    }
-    .buttons a {
-        display: block;
-
-        height: 26px;
-        line-height: 26px;
-
-        padding: 0 10px 0 10px;
-
-        text-align: center;
-        font-weight: bold;
-
-        border: 1px solid silver;
-        background-color: #ececec;
-    }
-    .buttons a:hover {
-        background-color: #dedcdc;
-    }
+.buttons .load {
+    float: left;
+}
+.buttons .save {
+    float: left;
+    margin-left: 5px;
+}
+.buttons .flash {
+    float: right;
+}
+.buttons .reset {
+    float: right;
+    margin-right: 5px;
+}
+.buttons a {
+    display: block;
+    height: 26px;
+    line-height: 26px;
+    padding: 0 10px 0 10px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid silver;
+    background-color: #ececec;
+}
+.buttons a:hover {
+    background-color: #dedcdc;
+}
