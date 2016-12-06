@@ -177,6 +177,7 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
             self.maximum_transmission_size = 128;
             available_flash_size = 32768;
             break;
+        */
         case 0x1E950F: // testing only
             console.log('Chip recognized as 328P');
 
@@ -184,7 +185,6 @@ USBasp_protocol.prototype.verify_chip_signature = function(signature) {
             self.maximum_transmission_size = 128;
             available_flash_size = 32768;
             break;
-        */
         case 0x1E9307:
             console.log('Chip recognized as 8A');
             GUI.log('Chip recognized as <strong>ATmega8 / ATmega8A</strong>');
@@ -438,7 +438,7 @@ USBasp_protocol.prototype.upload_procedure = function(step) {
                     var bytes_to_read = ((bytes_verified + self.maximum_transmission_size) <= self.hex.data[reading_block].bytes) ? self.maximum_transmission_size : (self.hex.data[reading_block].bytes - bytes_verified);
 
                     self.loadAddress(address, function() {
-                        self.controlTransfer('in', self.func.READFLASH, 0, 0, bytes_to_read, 0, function(data) {
+                        self.controlTransfer('in', self.func.READFLASH, address, 0, bytes_to_read, 0, function(data) {
                             console.log('USBASP - Reading from: ' + address + ', ' + bytes_to_read + ' bytes');
 
                             for (var i = 0; i < data.length; i++) {
